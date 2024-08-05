@@ -33,7 +33,7 @@
             android:name=".RegisterActivity"
             android:exported="true"
             android:theme="@style/Theme.Threehibeybey" />
-        <activity android:name=".RestaurantDetailActivity"
+        <activity android:name=".RestaurantActivity"
             android:exported="true"
             android:theme="@style/Theme.Threehibeybey" />
     </application>

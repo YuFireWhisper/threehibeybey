@@ -1,83 +1,157 @@
 [
   {
-    "name": "MORNING HOUSE",
-    "description": "這是一家非常好的餐廳。",
-    "image": "ic_restaurant.png",
+    "name": "學餐1",
+    "image": "學餐1.png",
     "items": [
       {
-        "name": "原味蛋餅",
-        "price": 25,
-        "calories": 225
+        "name": "餐廳1",
+        "image": "餐廳1.png",
+        "items": [
+          {
+            "name": "分類1",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          },
+          {
+            "name": "分類2",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          }
+        ]
       },
       {
-        "name": "玉米蛋餅",
-        "price": 30,
-        "calories": 245
+        "name": "餐廳2",
+        "image": "餐廳2.png",
+        "items": [
+          {
+            "name": "分類1",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          },
+          {
+            "name": "分類2",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "學餐2",
+    "image": "學餐2.png",
+    "items": [
+      {
+        "name": "餐廳1",
+        "image": "餐廳1.png",
+        "items": [
+          {
+            "name": "分類1",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          },
+          {
+            "name": "分類2",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          }
+        ]
       },
       {
-        "name": "肉鬆蛋餅",
-        "price": 30,
-        "calories": 275
-      },
-      {
-        "name": "火腿蛋餅",
-        "price": 30,
-        "calories": 275
-      },
-      {
-        "name": "蔬菜蛋餅",
-        "price": 30,
-        "calories": 225
-      },
-      {
-        "name": "起士蛋餅",
-        "price": 30,
-        "calories": 275
-      },
-      {
-        "name": "培根蛋餅",
-        "price": 35,
-        "calories": 350
-      },
-      {
-        "name": "熱狗蛋餅",
-        "price": 35,
-        "calories": 350
-      },
-      {
-        "name": "洋芋蛋餅",
-        "price": 35,
-        "calories": 300
-      },
-      {
-        "name": "薯餅蛋餅",
-        "price": 40,
-        "calories": 350
-      },
-      {
-        "name": "鮪魚蛋餅",
-        "price": 40,
-        "calories": 300
-      },
-      {
-        "name": "燒肉蛋餅",
-        "price": 45,
-        "calories": 350
-      },
-      {
-        "name": "改河粉皮",
-        "price": 5,
-        "calories": -90
-      },
-      {
-        "name": "加起士",
-        "price": 10,
-        "calories": 80
-      },
-      {
-        "name": "加乳酪絲",
-        "price": 15,
-        "calories": 25
+        "name": "餐廳2",
+        "image": "餐廳2.png",
+        "items": [
+          {
+            "name": "分類1",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          },
+          {
+            "name": "分類2",
+            "items": [
+              {
+                "name": "食物1",
+                "price": 10,
+                "calories": 10
+              },
+              {
+                "name": "食物2",
+                "price": 10,
+                "calories": 10
+              }
+            ]
+          }
+        ]
       }
     ]
   }
