@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1054159499334",
+    "firebase_url": "https://hibeybey1234-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "hibeybey1234",
+    "storage_bucket": "hibeybey1234.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054159499334:android:80f870d71172110333da47",
+        "android_client_info": {
+          "package_name": "com.threehibeybey"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1054159499334-f8vuhkq7q5t9vb6i72mnri7bhhcfgvk4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.threehibeybey",
+            "certificate_hash": "93527e5c505b13e0799108ef56d95df95eb70676"
+          }
+        },
+        {
+          "client_id": "1054159499334-snufjqt7llfhvqd9ncims3pghos9vjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuxnlk4DXttJ58MJf4PKclIrnZHd91XJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1054159499334-snufjqt7llfhvqd9ncims3pghos9vjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
