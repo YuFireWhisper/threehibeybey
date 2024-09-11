@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,8 +56,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
-
-    // 提升選中的食物狀態到 MyApp 層級
     val (selectedFoods, setSelectedFoods) = remember { mutableStateOf(listOf<FoodItem>()) }
 
     Scaffold(
@@ -256,6 +255,10 @@ fun SchoolCanteenScreen(
     val context = LocalContext.current
     val schoolCanteens = loadSchoolCanteens(context)
 
+    var showFamilyMartDialog by remember { mutableStateOf(false) }
+    var familyMartAmount by remember { mutableStateOf("") }
+    var familyMartCalories by remember { mutableStateOf("") }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(16.dp),
@@ -263,11 +266,107 @@ fun SchoolCanteenScreen(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(schoolCanteens) { schoolCanteen ->
-            SchoolCanteenCard(schoolCanteen) {
-                navController.navigate("restaurant/${schoolCanteen.name}")
+            if (schoolCanteen.name == "全家便利商店") {
+                // 顯示對話框而非卡片
+                if (showFamilyMartDialog) {
+                    FamilyMartDialog(
+                        amount = familyMartAmount,
+                        calories = familyMartCalories,
+                        onAmountChange = { familyMartAmount = it },
+                        onCaloriesChange = { familyMartCalories = it },
+                        onCancel = { showFamilyMartDialog = false },
+                        onComplete = {
+                            val amount = familyMartAmount.toIntOrNull()
+                            val calories = familyMartCalories.toFloatOrNull()
+                            if (amount != null && calories != null) {
+                                // 增加至選中食物清單
+                                setSelectedFoods(selectedFoods + FoodItem("全家便利商店", amount, calories))
+                            }
+                            showFamilyMartDialog = false
+                        }
+                    )
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable { showFamilyMartDialog = true },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = "全家便利商店",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    }
+                }
+            } else {
+                SchoolCanteenCard(schoolCanteen) {
+                    navController.navigate("restaurant/${schoolCanteen.name}")
+                }
             }
         }
     }
+
+    // 如果有選中的食物或有全家便利商店的數據，則顯示 FloatingSummaryCard
+    if (selectedFoods.isNotEmpty()) {
+        FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
+    }
+}
+
+@Composable
+fun FamilyMartDialog(
+    amount: String,
+    calories: String,
+    onAmountChange: (String) -> Unit,
+    onCaloriesChange: (String) -> Unit,
+    onCancel: () -> Unit,
+    onComplete: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("全家便利商店") },
+        text = {
+            Column {
+                // 金額輸入框
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = onAmountChange,
+                    label = { Text("花費金額 (元)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // 熱量輸入框
+                OutlinedTextField(
+                    value = calories,
+                    onValueChange = onCaloriesChange,
+                    label = { Text("攝取熱量 (大卡)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onComplete,
+                enabled = amount.isNotEmpty() && calories.isNotEmpty() && amount.toIntOrNull() != null && calories.toFloatOrNull() != null
+            ) {
+                Text("完成")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("取消")
+            }
+        }
+    )
 }
 
 @Composable
