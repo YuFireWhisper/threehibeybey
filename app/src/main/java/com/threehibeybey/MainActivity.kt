@@ -4,22 +4,24 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -35,9 +37,9 @@ import java.io.IOException
 
 data class FoodItem(val name: String, val price: Int, val calories: Float)
 data class Category(val name: String, val items: List<FoodItem>)
-data class Restaurant(val name: String, val image: String, val items: List<Category>)
-data class SchoolCanteen(val name: String, val image: String, val items: List<Restaurant>)
-data class BottomNavItem(val route: String, val title: String, val icon: Painter)
+data class Restaurant(val name: String, val items: List<Category>)
+data class SchoolCanteen(val name: String, val items: List<Restaurant>)
+data class BottomNavItem(val route: String, val title: String)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +55,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
+
+    // 提升選中的食物狀態到 MyApp 層級
+    val (selectedFoods, setSelectedFoods) = remember { mutableStateOf(listOf<FoodItem>()) }
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { innerPadding ->
@@ -62,20 +68,20 @@ fun MyApp() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("personal") { PersonalScreen() }
-            composable("restaurant") { SchoolCanteenScreen(navController) }
+            composable("restaurant") { SchoolCanteenScreen(navController, selectedFoods, setSelectedFoods) }
             composable(
                 "restaurant/{canteenName}",
                 arguments = listOf(navArgument("canteenName") { type = NavType.StringType })
             ) { backStackEntry ->
                 val canteenName = backStackEntry.arguments?.getString("canteenName")
-                RestaurantScreen(navController, canteenName)
+                RestaurantScreen(navController, canteenName, selectedFoods, setSelectedFoods)
             }
             composable(
                 "restaurant/{canteenName}/{restaurantName}",
                 arguments = listOf(navArgument("canteenName") { type = NavType.StringType }, navArgument("restaurantName") { type = NavType.StringType })
             ) { backStackEntry ->
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName")
-                CategoryScreen(navController, restaurantName)
+                CategoryScreen(navController, restaurantName, selectedFoods, setSelectedFoods)
             }
             composable(
                 "food/{restaurantName}/{categoryName}",
@@ -83,34 +89,84 @@ fun MyApp() {
             ) { backStackEntry ->
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName")
                 val categoryName = backStackEntry.arguments?.getString("categoryName")
-                FoodScreen(navController, restaurantName, categoryName)
+                FoodScreen(navController, restaurantName, categoryName, selectedFoods, setSelectedFoods)
+            }
+        }
+    }
+
+    // 懸浮卡片顯示邏輯
+    if (selectedFoods.isNotEmpty()) {
+        FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
+    }
+}
+
+@Composable
+fun FloatingSummaryCard(selectedFoods: List<FoodItem>, onClear: () -> Unit) {
+    val totalAmount = selectedFoods.sumOf { it.price }
+    val totalCalories = selectedFoods.sumOf { it.calories.toDouble() }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize() // Fill the size of the screen
+            .padding(16.dp) // Optional padding
+    ) {
+        Card(
+            modifier = Modifier
+                .align(Alignment.BottomCenter) // Align the card to the bottom center
+                .fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween, // Space between items
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "金額: $totalAmount 元",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "熱量: $totalCalories 大卡",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+
+                Button(
+                    onClick = onClear,
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
+                    Text("清除")
+                }
             }
         }
     }
 }
 
+
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("personal", "個人", painterResource(id = R.drawable.ic_personal)),
-        BottomNavItem("restaurant", "餐廳", painterResource(id = R.drawable.ic_restaurant))
+        BottomNavItem("personal", "個人"),
+        BottomNavItem("restaurant", "餐廳")
     )
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         items.forEach { item ->
             NavigationBarItem(
-                icon = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = item.icon,
-                            contentDescription = item.title,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = item.title, style = MaterialTheme.typography.labelSmall)
-                    }
-                },
+                label = { Text(text = item.title, style = MaterialTheme.typography.labelSmall) },
+                icon = { Icon(Icons.Default.Home, contentDescription = null) }, // 這裡加上基本圖標
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
@@ -120,8 +176,7 @@ fun BottomNavigationBar(navController: NavController) {
                         launchSingleTop = true
                         restoreState = true
                     }
-                },
-                alwaysShowLabel = false
+                }
             )
         }
     }
@@ -129,11 +184,75 @@ fun BottomNavigationBar(navController: NavController) {
 
 @Composable
 fun PersonalScreen() {
-    // 個人頁面的內容
+    val (height, setHeight) = remember { mutableStateOf("") }
+    val (weight, setWeight) = remember { mutableStateOf("") }
+    val (bmi, setBmi) = remember { mutableStateOf<Float?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "BMI 計算器", style = MaterialTheme.typography.headlineMedium)
+
+        // 身高輸入
+        Text("身高 (cm):")
+        OutlinedTextField(
+            value = height,
+            onValueChange = { setHeight(it) },
+            label = { Text("輸入身高") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // 體重輸入
+        Text("體重 (kg):")
+        OutlinedTextField(
+            value = weight,
+            onValueChange = { setWeight(it) },
+            label = { Text("輸入體重") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // 計算 BMI 按鈕
+        Button(onClick = {
+            val heightValue = height.toFloatOrNull()
+            val weightValue = weight.toFloatOrNull()
+            if (heightValue != null && weightValue != null && heightValue > 0) {
+                val heightInMeters = heightValue / 100
+                val bmiValue = weightValue / (heightInMeters * heightInMeters)
+                setBmi(bmiValue)
+            } else {
+                setBmi(null)
+            }
+        }) {
+            Text("計算 BMI")
+        }
+
+        // 顯示 BMI 結果
+        bmi?.let {
+            Text(
+                text = "您的 BMI 是: ${String.format("%.2f", it)}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } ?: run {
+            Text(
+                text = "請輸入身高和體重並點擊計算。",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
 }
 
 @Composable
-fun SchoolCanteenScreen(navController: NavController) {
+fun SchoolCanteenScreen(
+    navController: NavController,
+    selectedFoods: List<FoodItem>,
+    setSelectedFoods: (List<FoodItem>) -> Unit
+) {
     val context = LocalContext.current
     val schoolCanteens = loadSchoolCanteens(context)
 
@@ -152,8 +271,7 @@ fun SchoolCanteenScreen(navController: NavController) {
 }
 
 @Composable
-fun SchoolCanteenCard(schoolCanteen: SchoolCanteen, onClick:() -> Unit) {
-    val context = LocalContext.current
+fun SchoolCanteenCard(schoolCanteen: SchoolCanteen, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,18 +285,9 @@ fun SchoolCanteenCard(schoolCanteen: SchoolCanteen, onClick:() -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
-            Image(
-                painter = getImagePainter(context = context, imageName = schoolCanteen.image),
-                contentDescription = null,
-                modifier = Modifier
-                    .height(130.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = schoolCanteen.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -186,17 +295,12 @@ fun SchoolCanteenCard(schoolCanteen: SchoolCanteen, onClick:() -> Unit) {
 }
 
 @Composable
-fun getImagePainter(context: Context, imageName: String): Painter {
-    val resourceId = context.resources.getIdentifier(imageName, "drawable", context.packageName)
-    return if (resourceId != 0) {
-        painterResource(id = resourceId)
-    } else {
-        painterResource(id = R.drawable.ic_restaurant)
-    }
-}
-
-@Composable
-fun RestaurantScreen(navController: NavController, canteenName: String?) {
+fun RestaurantScreen(
+    navController: NavController,
+    canteenName: String?,
+    selectedFoods: List<FoodItem>,
+    setSelectedFoods: (List<FoodItem>) -> Unit
+) {
     val context = LocalContext.current
     val schoolCanteens = loadSchoolCanteens(context)
     val restaurants = schoolCanteens.find { it.name == canteenName }?.items ?: emptyList()
@@ -217,7 +321,6 @@ fun RestaurantScreen(navController: NavController, canteenName: String?) {
 
 @Composable
 fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
-    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -231,18 +334,9 @@ fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
-            Image(
-                painter = getImagePainter(context = context, imageName = restaurant.image),
-                contentDescription = null,
-                modifier = Modifier
-                    .height(130.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = restaurant.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -250,11 +344,16 @@ fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
 }
 
 @Composable
-fun CategoryScreen(navController: NavController, restaurantName: String?) {
+fun CategoryScreen(
+    navController: NavController,
+    restaurantName: String?,
+    selectedFoods: List<FoodItem>,
+    setSelectedFoods: (List<FoodItem>) -> Unit
+) {
     val context = LocalContext.current
     val schoolCanteens = loadSchoolCanteens(context)
-    val restaurant = schoolCanteens.flatMap { it.items }.find { it.name == restaurantName }
-    val categories = restaurant?.items ?: emptyList()
+    val categories = schoolCanteens.flatMap { it.items }
+        .find { it.name == restaurantName }?.items ?: emptyList()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -287,7 +386,7 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
         ) {
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -295,12 +394,18 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
 }
 
 @Composable
-fun FoodScreen(navController: NavController, restaurantName: String?, categoryName: String?) {
+fun FoodScreen(
+    navController: NavController,
+    restaurantName: String?,
+    categoryName: String?,
+    selectedFoods: List<FoodItem>,
+    setSelectedFoods: (List<FoodItem>) -> Unit
+) {
     val context = LocalContext.current
     val schoolCanteens = loadSchoolCanteens(context)
-    val restaurant = schoolCanteens.flatMap { it.items }.find { it.name == restaurantName }
-    val category = restaurant?.items?.find { it.name == categoryName }
-    val foodItems = category?.items ?: emptyList()
+    val foods = schoolCanteens.flatMap { it.items }
+        .flatMap { it.items }
+        .find { it.name == categoryName }?.items ?: emptyList()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -308,24 +413,35 @@ fun FoodScreen(navController: NavController, restaurantName: String?, categoryNa
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(foodItems) { foodItem ->
-            FoodCard(foodItem) {
-                // 這裡可以處理食物項目點擊事件
-                // 可以顯示食物項目的詳細資訊
+        items(foods) { food ->
+            FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
+                // 更新選中的食物清單
+                setSelectedFoods(
+                    if (selectedFoods.contains(food)) {
+                        selectedFoods - food // 取消選中
+                    } else {
+                        selectedFoods + food // 選中
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun FoodCard(foodItem: FoodItem, onClick: () -> Unit) {
+fun FoodCard(food: FoodItem, isSelected: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = if (isSelected) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+        } else {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        }
     ) {
         Column(
             modifier = Modifier
@@ -333,32 +449,37 @@ fun FoodCard(foodItem: FoodItem, onClick: () -> Unit) {
                 .padding(16.dp),
         ) {
             Text(
-                text = foodItem.name,
-                style = MaterialTheme.typography.headlineMedium,
+                text = food.name,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Price: ${foodItem.price}",
-                style = MaterialTheme.typography.bodyMedium
+                text = "Price: ${food.price}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Calories: ${foodItem.calories}",
-                style = MaterialTheme.typography.bodyMedium
+                text = "Calories: ${food.calories}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }
 }
 
 fun loadSchoolCanteens(context: Context): List<SchoolCanteen> {
-    val json: String
-    try {
-        json = context.assets.open("restaurants.json").bufferedReader().use { it.readText() }
+    return try {
+        val inputStream = context.assets.open("restaurants.json")
+        val size = inputStream.available()
+        val buffer = ByteArray(size)
+        inputStream.read(buffer)
+        inputStream.close()
+        val json = String(buffer, Charsets.UTF_8)
+        val gson = Gson()
+        val listType = object : TypeToken<List<SchoolCanteen>>() {}.type
+        gson.fromJson(json, listType)
     } catch (e: IOException) {
         e.printStackTrace()
-        return emptyList()
+        emptyList()
     }
-
-    val gson = Gson()
-    val listType = object : TypeToken<List<SchoolCanteen>>() {}.type
-    return gson.fromJson(json, listType)
 }

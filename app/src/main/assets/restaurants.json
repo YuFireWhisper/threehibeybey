@@ -1,153 +1,444 @@
 [
   {
-    "name": "學餐1",
-    "image": "學餐1.png",
+    "name": "宜園餐廳",
+    "image": "宜園餐廳.png",
     "items": [
       {
-        "name": "餐廳1",
-        "image": "餐廳1.png",
+        "name": "MORNING HOUSE",
+        "image": "MORNING_HOUSE.png",
         "items": [
           {
-            "name": "分類1",
+            "name": "蛋餅",
             "items": [
               {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "原味蛋餅",
+                "price": 25,
+                "calories": 225
               },
               {
-                "name": "食物2",
+                "name": "玉米蛋餅",
+                "price": 30,
+                "calories": 245
+              },
+              {
+                "name": "肉鬆蛋餅",
+                "price": 30,
+                "calories": 275
+              },
+              {
+                "name": "火腿蛋餅",
+                "price": 30,
+                "calories": 275
+              },
+              {
+                "name": "蔬菜蛋餅",
+                "price": 30,
+                "calories": 225
+              },
+              {
+                "name": "起士蛋餅",
+                "price": 30,
+                "calories": 275
+              },
+              {
+                "name": "培根蛋餅",
+                "price": 35,
+                "calories": 350
+              },
+              {
+                "name": "熱狗蛋餅",
+                "price": 35,
+                "calories": 350
+              },
+              {
+                "name": "洋芋蛋餅",
+                "price": 35,
+                "calories": 300
+              },
+              {
+                "name": "薯餅蛋餅",
+                "price": 40,
+                "calories": 350
+              },
+              {
+                "name": "鮪魚蛋餅",
+                "price": 40,
+                "calories": 300
+              },
+              {
+                "name": "燒肉蛋餅",
+                "price": 45,
+                "calories": 350
+              },
+              {
+                "name": "改河粉皮",
+                "price": 5,
+                "calories": 90
+              },
+              {
+                "name": "加起士",
                 "price": 10,
-                "calories": 10
+                "calories": 80
+              },
+              {
+                "name": "加乳酪絲",
+                "price": 15,
+                "calories": 25
               }
             ]
           },
           {
-            "name": "分類2",
+            "name": "吐司",
             "items": [
               {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "煎蛋吐司",
+                "price": 25,
+                "calories": 300
               },
               {
-                "name": "食物2",
-                "price": 10,
-                "calories": 10
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "餐廳2",
-        "image": "餐廳2.png",
-        "items": [
-          {
-            "name": "分類1",
-            "items": [
-              {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "肉鬆蛋吐司",
+                "price": 30,
+                "calories": 400
               },
               {
-                "name": "食物2",
-                "price": 10,
-                "calories": 10
-              }
-            ]
-          },
-          {
-            "name": "分類2",
-            "items": [
-              {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "起士蛋吐司",
+                "price": 30,
+                "calories": 375
               },
               {
-                "name": "食物2",
-                "price": 10,
-                "calories": 10
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "name": "學餐2",
-    "image": "學餐2.png",
-    "items": [
-      {
-        "name": "餐廳1",
-        "image": "餐廳1.png",
-        "items": [
-          {
-            "name": "分類1",
-            "items": [
-              {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "火腿蛋吐司",
+                "price": 30,
+                "calories": 380
               },
               {
-                "name": "食物2",
-                "price": 10,
-                "calories": 10
-              }
-            ]
-          },
-          {
-            "name": "分類2",
-            "items": [
-              {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "培根蛋吐司",
+                "price": 35,
+                "calories": 450
               },
               {
-                "name": "食物2",
-                "price": 10,
-                "calories": 10
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "餐廳2",
-        "image": "餐廳2.png",
-        "items": [
-          {
-            "name": "分類1",
-            "items": [
-              {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "鮪魚蛋吐司",
+                "price": 40,
+                "calories": 450
               },
               {
-                "name": "食物2",
+                "name": "薯餅蛋吐司",
+                "price": 40,
+                "calories": 450
+              },
+              {
+                "name": "香雞排蛋吐司",
+                "price": 40,
+                "calories": 500
+              },
+              {
+                "name": "肉蛋吐司",
+                "price": 45,
+                "calories": 475
+              },
+              {
+                "name": "卡拉雞腿蛋吐司",
+                "price": 65,
+                "calories": 550
+              },
+              {
+                "name": "總匯三明治",
+                "price": 60,
+                "calories": 600
+              },
+              {
+                "name": "花生吐司",
+                "price": 20,
+                "calories": 340
+              },
+              {
+                "name": "草莓吐司",
+                "price": 20,
+                "calories": 260
+              },
+              {
+                "name": "奶酥吐司",
+                "price": 20,
+                "calories": 360
+              },
+              {
+                "name": "香蒜吐司",
+                "price": 20,
+                "calories": 240
+              },
+              {
+                "name": "巧克力吐司",
+                "price": 20,
+                "calories": 310
+              },
+              {
+                "name": "加起士",
                 "price": 10,
-                "calories": 10
+                "calories": 80
               }
             ]
           },
           {
-            "name": "分類2",
+            "name": "漢堡",
             "items": [
               {
-                "name": "食物1",
-                "price": 10,
-                "calories": 10
+                "name": "豬肉蛋堡",
+                "price": 35,
+                "calories": 450
               },
               {
-                "name": "食物2",
+                "name": "鮪魚蛋堡",
+                "price": 40,
+                "calories": 45
+              },
+              {
+                "name": "薯餅蛋堡",
+                "price": 40,
+                "calories": 500
+              },
+              {
+                "name": "香雞排蛋堡",
+                "price": 40,
+                "calories": 550
+              },
+              {
+                "name": "脆皮雞排堡",
+                "price": 50,
+                "calories": 550
+              },
+              {
+                "name": "鳳梨燒肉堡",
+                "price": 50,
+                "calories": 550
+              },
+              {
+                "name": "牛肉蛋堡",
+                "price": 55,
+                "calories": 600
+              },
+              {
+                "name": "培根起士蛋堡",
+                "price": 50,
+                "calories": 600
+              },
+              {
+                "name": "豬排蛋堡",
+                "price": 50,
+                "calories": 525
+              },
+              {
+                "name": "烙烤雞腿堡",
+                "price": 60,
+                "calories": 635
+              },
+              {
+                "name": "卡拉雞腿蛋堡",
+                "price": 65,
+                "calories": 650
+              },
+              {
+                "name": "加起士",
                 "price": 10,
-                "calories": 10
+                "calories": 80
+              }
+            ]
+          },
+          {
+            "name": "麵食",
+            "items": [
+              {
+                "name": "肉醬起士麵",
+                "price": 60,
+                "calories": 600
+              },
+              {
+                "name": "蘑菇鐵板麵+蛋",
+                "price": 55,
+                "calories": 550
+              },
+              {
+                "name": "綜合鐵板麵+蛋",
+                "price": 55,
+                "calories": 550
+              },
+              {
+                "name": "黑胡椒鐵板麵+蛋",
+                "price": 55,
+                "calories": 550
+              },
+              {
+                "name": "加麵",
+                "price": 5,
+                "calories": 200
+              }
+            ]
+          },
+          {
+            "name": "點心",
+            "items": [
+              {
+                "name": "荷包蛋",
+                "price": 15,
+                "calories": 80
+              },
+              {
+                "name": "小熱狗(3條)",
+                "price": 15,
+                "calories": 175
+              },
+              {
+                "name": "薯餅",
+                "price": 18,
+                "calories": 150
+              },
+              {
+                "name": "蘿蔔糕",
+                "price": 30,
+                "calories": 200
+              },
+              {
+                "name": "小肉豆",
+                "price": 30,
+                "calories": 250
+              },
+              {
+                "name": "金黃脆薯",
+                "price": 35,
+                "calories": 250
+              },
+              {
+                "name": "元寶10顆",
+                "price": 35,
+                "calories": 250
+              },
+              {
+                "name": "原味抓餅加蛋",
+                "price": 40,
+                "calories": 300
+              },
+              {
+                "name": "麥克雞塊（6塊）",
+                "price": 40,
+                "calories": 250
+              },
+              {
+                "name": "起士火腿燒餅",
+                "price": 45,
+                "calories": 400
+              },
+              {
+                "name": "蔥肉抓餅加蛋",
+                "price": 55,
+                "calories": 450
+              },
+              {
+                "name": "蔬果燒餅（素）",
+                "price": 45,
+                "calories": 400
+              }
+            ]
+          },
+          {
+            "name": "飲料",
+            "items": [
+              {
+                "name": "豆漿（有糖/無糖）",
+                "price": 20,
+                "calories": "150"
+              },
+              {
+                "name": "紅茶（有糖/無糖）",
+                "price": 20,
+                "calories": "120"
+              },
+              {
+                "name": "奶茶（小）",
+                "price": 20,
+                "calories": 150
+              },
+              {
+                "name": "奶茶（大）",
+                "price": 25,
+                "calories": 200
+              },
+              {
+                "name": "柳橙汁",
+                "price": 20,
+                "calories": 150
+              },
+              {
+                "name": "檸檬紅茶",
+                "price": 20,
+                "calories": null
+              },
+              {
+                "name": "奶香可可（大）",
+                "price": 35,
+                "calories": 250
+              },
+              {
+                "name": "紅茶鮮奶（大）",
+                "price": 40,
+                "calories": 200
+              },
+              {
+                "name": "玉米濃湯",
+                "price": 35,
+                "calories": 250
+              }
+            ]
+          },
+          {
+            "name": "厚片",
+            "items": [
+              {
+                "name": "花生",
+                "price": 25,
+                "calories": 250
+              },
+              {
+                "name": "草莓",
+                "price": 25,
+                "calories": 200
+              },
+              {
+                "name": "奶酥",
+                "price": 25,
+                "calories": 250
+              },
+              {
+                "name": "香蒜",
+                "price": 25,
+                "calories": 200
+              },
+              {
+                "name": "巧克力",
+                "price": 25,
+                "calories": 250
+              }
+            ]
+          },
+          {
+            "name": "APP限定",
+            "items": [
+              {
+                "name": "檸檬雞生菜捲",
+                "price": 50,
+                "calories": 200
+              },
+              {
+                "name": "洋芋潛艇堡",
+                "price": 50,
+                "calories": 300
+              },
+              {
+                "name": "輕食餐盒",
+                "price": 85,
+                "calories": 250
+              },
+              {
+                "name": "麵食餐盒",
+                "price": 85,
+                "calories": 500
               }
             ]
           }
