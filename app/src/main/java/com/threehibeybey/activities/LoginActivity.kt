@@ -36,10 +36,8 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                // 使用 Compose 的狀態來管理載入指示器
                 var isLoading by remember { mutableStateOf(false) }
 
-                // 監聽 authState 並更新 isLoading 狀態
                 LaunchedEffect(Unit) {
                     authViewModel.authState.collect { state ->
                         when (state) {
@@ -74,7 +72,6 @@ class LoginActivity : ComponentActivity() {
                     )
 
                     if (isLoading) {
-                        // 載入指示器覆蓋在 LoginPage 之上
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
