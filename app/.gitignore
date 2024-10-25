@@ -1,1 +1,70 @@
-/build
+# Kotlin build files
+/build/
+/out/
+
+# IntelliJ IDEA / Android Studio
+.idea/
+/*.iml
+*.ipr
+*.iws
+
+# macOS
+.DS_Store
+
+# Gradle
+/.gradle/
+gradle-app.setting
+
+# Local configuration file (contains information about configuration)
+local.properties
+
+# Log files
+*.log
+
+# Android/IntelliJ files
+/captures/
+/.externalNativeBuild
+/gradlew
+/gradlew.bat
+/gradle/
+*.jar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Kotlin specific
+*.kotlin_module
+
+# JetBrains IDEs
+/.idea/
+/workspace.xml
+/tasks.xml
+/usage.statistics.xml
+/gradle.xml
+/libraries/
+/.idea_modules/
+/atlassian-ide-plugin.xml
+
+# VSCode settings
+.vscode/
+
+# Java
+*.class
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+
+# Logs
+
+# Temporary files
+*.swp
+*.swo
+*.swn
+
+# Compiled code
