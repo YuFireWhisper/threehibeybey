@@ -38,15 +38,13 @@ fun CategoryScreen(
     selectedFoods: List<MenuItem>,
     setSelectedFoods: (List<MenuItem>) -> Unit
 ) {
-    val canteens by restaurantViewModel.canteens.collectAsState()
+    val restaurants by restaurantViewModel.restaurants.collectAsState()
 
     // 找到對應的餐廳
-    val restaurant = canteens
-        .flatMap { it.restaurant.let { listOf(it) } }
-        .find { it.name == restaurantName }
+    val restaurant = restaurants.find { it.name == restaurantName }
 
     // 從餐廳中提取所有分類
-    val categories: List<Category> = restaurant?.items?.map { it.category } ?: emptyList()
+    val categories: List<Category> = restaurant?.items ?: emptyList()
 
     if (categories.isEmpty()) {
         Log.e("CategoryScreen", "No categories found for restaurant: $restaurantName")

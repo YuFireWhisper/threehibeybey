@@ -33,16 +33,16 @@ import com.threehibeybey.viewmodels.RestaurantViewModel
 fun RestaurantScreen(
     navController: NavController,
     restaurantViewModel: RestaurantViewModel,
-    selectedFoods: List<com.threehibeybey.models.MenuItem>, // 修改為 MenuItem
-    setSelectedFoods: (List<com.threehibeybey.models.MenuItem>) -> Unit // 修改為 MenuItem
+    selectedFoods: List<com.threehibeybey.models.MenuItem>,
+    setSelectedFoods: (List<com.threehibeybey.models.MenuItem>) -> Unit
 ) {
-    val canteens by restaurantViewModel.canteens.collectAsState()
+    val restaurants by restaurantViewModel.restaurants.collectAsState()
     val error by restaurantViewModel.error.collectAsState()
 
     if (error != null) {
         Text(text = error ?: "", color = MaterialTheme.colorScheme.error)
     } else {
-        if (canteens.isEmpty()) {
+        if (restaurants.isEmpty()) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -57,12 +57,10 @@ fun RestaurantScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 正確地迭代每個餐廳
-                items(canteens.map { it.restaurant }) { restaurant ->
+                items(restaurants) { restaurant ->
                     Log.d("RestaurantScreen", "載入餐廳: ${restaurant.name}")
                     RestaurantCard(restaurant) {
                         if (restaurant.name == "全家便利商店") {
-                            // 導向新增品項的輸入畫面
                             navController.navigate("familyMartInput")
                         } else {
                             navController.navigate("restaurant/${restaurant.name}")
@@ -71,7 +69,6 @@ fun RestaurantScreen(
                 }
             }
 
-            // 懸浮卡片顯示邏輯
             if (selectedFoods.isNotEmpty()) {
                 FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
             }

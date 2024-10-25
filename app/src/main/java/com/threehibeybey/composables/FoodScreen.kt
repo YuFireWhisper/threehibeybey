@@ -38,21 +38,17 @@ fun FoodScreen(
     setSelectedFoods: (List<MenuItem>) -> Unit,
     personalViewModel: PersonalViewModel
 ) {
-    val canteens by restaurantViewModel.canteens.collectAsState()
+    val restaurants by restaurantViewModel.restaurants.collectAsState()
 
     // 找到對應的餐廳
-    val restaurant = canteens
-        .flatMap { it.restaurant.let { listOf(it) } }
-        .find { it.name == restaurantName }
+    val restaurant = restaurants.find { it.name == restaurantName }
 
     // 找到對應的分類
-    val categoryWrapper = restaurant?.items?.find { it.category.name == categoryName }
-    val subcategories = categoryWrapper?.category?.items ?: emptyList()
+    val category = restaurant?.items?.find { it.name == categoryName }
+    val subcategories = category?.items ?: emptyList()
 
     // 從子分類中提取菜單項目
-    val foods: List<MenuItem> = subcategories.flatMap { subcategoryWrapper ->
-        subcategoryWrapper.subcategory.items.map { it.menu_item }
-    }
+    val foods: List<MenuItem> = subcategories.flatMap { it.items }
 
     if (foods.isEmpty()) {
         Log.e("FoodScreen", "No foods found for category: $categoryName in restaurant: $restaurantName")

@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.threehibeybey.composables.LoginPage
 import com.threehibeybey.repositories.AuthRepository
@@ -33,6 +34,10 @@ class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+
         val authRepository = AuthRepository(FirebaseAuth.getInstance())
         authViewModel = AuthViewModel(authRepository)
 

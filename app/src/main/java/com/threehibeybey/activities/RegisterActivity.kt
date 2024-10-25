@@ -7,12 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.threehibeybey.composables.RegisterPage
 import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.ui.theme.MyApplicationTheme
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 /**
@@ -24,6 +25,10 @@ class RegisterActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+
         val authRepository = AuthRepository(FirebaseAuth.getInstance())
         authViewModel = AuthViewModel(authRepository)
 

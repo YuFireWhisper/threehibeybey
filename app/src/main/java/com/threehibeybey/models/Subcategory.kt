@@ -5,5 +5,5 @@ package com.threehibeybey.models
  */
 data class Subcategory(
     val name: String = "",
-    val items: List<MenuItemWrapper> = emptyList()
+    val items: List<MenuItem> = emptyList()
 )

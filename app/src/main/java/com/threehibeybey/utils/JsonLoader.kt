@@ -1,33 +1,25 @@
-// utils/JsonLoader.kt
 package com.threehibeybey.utils
 
 import android.content.Context
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.threehibeybey.models.SchoolCanteen
+import com.threehibeybey.models.Restaurant
 import java.io.IOException
 
 /**
- * 工具類別用於從assets加載和解析JSON數據。
+ * 工具類別用於從 assets 加載和解析 JSON 數據。
  */
 class JsonLoader {
 
     /**
-     * 加載並解析JSON文件為SchoolCanteen物件列表。
+     * 加載並解析 JSON 文件為 Restaurant 物件列表。
      */
-    fun loadJson(context: Context, fileName: String): List<SchoolCanteen> {
+    fun loadJson(context: Context, fileName: String): List<Restaurant> {
         return try {
             val inputStream = context.assets.open(fileName)
-            val size = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val json = String(buffer, Charsets.UTF_8)
+            val json = inputStream.bufferedReader().use { it.readText() }
             val gson = Gson()
-
-            val schoolCanteenType = object : TypeToken<SchoolCanteen>() {}.type
-            val schoolCanteen: SchoolCanteen = gson.fromJson(json, schoolCanteenType)
-            listOf(schoolCanteen)
+            val restaurants = gson.fromJson(json, Array<Restaurant>::class.java).toList()
+            restaurants
         } catch (e: IOException) {
             e.printStackTrace()
             emptyList()

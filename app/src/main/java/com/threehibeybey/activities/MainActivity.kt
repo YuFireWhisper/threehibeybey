@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.threehibeybey.composables.MyApp
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+
         // 檢查使用者是否已登入
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
@@ -39,6 +43,9 @@ class MainActivity : ComponentActivity() {
         personalViewModel = PersonalViewModel(historyRepository)
         restaurantViewModel = RestaurantViewModel(restaurantRepository)
 
+        // 在 setContent 之前載入資料
+        restaurantViewModel.loadRestaurants(JsonLoader(), this)
+
         setContent {
             MyApplicationTheme {
                 MyApp(
@@ -47,9 +54,5 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
-        // Load and augment canteens
-        restaurantViewModel.loadCanteens(JsonLoader(), this)
-        restaurantViewModel.addFamilyMart() // 修正方法名稱為 addFamilyMart()
     }
 }

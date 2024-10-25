@@ -5,5 +5,5 @@ package com.threehibeybey.models
  */
 data class Restaurant(
     val name: String = "",
-    val items: List<CategoryWrapper> = emptyList()
+    val items: List<Category> = emptyList()
 )
