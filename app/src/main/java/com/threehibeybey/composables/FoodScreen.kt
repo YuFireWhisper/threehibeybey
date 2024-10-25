@@ -1,14 +1,27 @@
 package com.threehibeybey.composables
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.threehibeybey.models.Category
 import com.threehibeybey.models.FoodItem
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
@@ -26,12 +39,13 @@ fun FoodScreen(
     personalViewModel: com.threehibeybey.viewmodels.PersonalViewModel
 ) {
     val canteens by restaurantViewModel.canteens.collectAsState()
-    val foods = canteens
+    val foods: List<FoodItem> = canteens
         .flatMap { it.items }
         .filterIsInstance<com.threehibeybey.models.Restaurant>()
         .find { it.name == restaurantName }
         ?.items
         ?.flatMap { it.items }
+        ?.filterIsInstance<Category>()
         ?.find { it.name == categoryName }
         ?.items ?: emptyList()
 
@@ -51,6 +65,8 @@ fun FoodScreen(
                         selectedFoods + food // 選中
                     }
                 )
+                // 使用 personalViewModel 添加至歷史紀錄
+                personalViewModel.addToHistory(food)
             }
         }
     }

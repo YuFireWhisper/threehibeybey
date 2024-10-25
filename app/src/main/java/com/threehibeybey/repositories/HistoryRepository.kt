@@ -1,5 +1,6 @@
 package com.threehibeybey.repositories
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.threehibeybey.models.FoodItem
 import kotlinx.coroutines.tasks.await
@@ -7,7 +8,7 @@ import kotlinx.coroutines.tasks.await
 /**
  * Repository for handling history-related data operations.
  */
-class HistoryRepository(private val firestore: FirebaseFirestore) {
+class HistoryRepository(private val firestore: FirebaseFirestore, private val firebaseAuth: FirebaseAuth) {
 
     private val historyCollection = firestore.collection("history")
 
@@ -16,9 +17,13 @@ class HistoryRepository(private val firestore: FirebaseFirestore) {
      */
     suspend fun addFoodItem(foodItem: FoodItem): Boolean {
         return try {
-            val user = firestore.collection("users").document(firestore.auth.currentUser?.uid ?: "")
-            historyCollection.document(user.id).collection("foodItems").add(foodItem).await()
-            true
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                historyCollection.document(user.uid).collection("foodItems").add(foodItem).await()
+                true
+            } else {
+                false
+            }
         } catch (e: Exception) {
             false
         }
@@ -29,9 +34,13 @@ class HistoryRepository(private val firestore: FirebaseFirestore) {
      */
     suspend fun getFoodHistory(): List<FoodItem> {
         return try {
-            val user = firestore.collection("users").document(firestore.auth.currentUser?.uid ?: "")
-            val snapshot = historyCollection.document(user.id).collection("foodItems").get().await()
-            snapshot.documents.mapNotNull { it.toObject(FoodItem::class.java) }
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                val snapshot = historyCollection.document(user.uid).collection("foodItems").get().await()
+                snapshot.documents.mapNotNull { it.toObject(FoodItem::class.java) }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             emptyList()
         }

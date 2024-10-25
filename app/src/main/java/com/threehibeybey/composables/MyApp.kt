@@ -1,10 +1,18 @@
 package com.threehibeybey.composables
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
@@ -17,7 +25,7 @@ fun MyApp(
     personalViewModel: PersonalViewModel
 ) {
     val navController = rememberNavController()
-    val (selectedFoods, setSelectedFoods) = remember { mutableStateOf(listOf<com.threehibeybey.models.FoodItem>()) }
+    var selectedFoods by remember { mutableStateOf(listOf<com.threehibeybey.models.FoodItem>()) }
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController = navController) }
@@ -32,7 +40,7 @@ fun MyApp(
                     navController = navController,
                     restaurantViewModel = restaurantViewModel,
                     selectedFoods = selectedFoods,
-                    setSelectedFoods = setSelectedFoods
+                    setSelectedFoods = { selectedFoods = it }
                 )
             }
             composable("calorieCalculator") {
@@ -47,7 +55,25 @@ fun MyApp(
                     onViewHistory = { /* Navigate to history screen */ }
                 )
             }
-            // Add more composable destinations as needed
+            composable(
+                route = "food/{restaurantName}/{categoryName}",
+                arguments = listOf(
+                    navArgument("restaurantName") { type = NavType.StringType },
+                    navArgument("categoryName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
+                val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+                FoodScreen(
+                    navController = navController,
+                    restaurantName = restaurantName,
+                    categoryName = categoryName,
+                    restaurantViewModel = restaurantViewModel,
+                    selectedFoods = selectedFoods,
+                    setSelectedFoods = { selectedFoods = it },
+                    personalViewModel = personalViewModel
+                )
+            }
         }
     }
 }
