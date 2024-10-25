@@ -1,5 +1,6 @@
 package com.threehibeybey.composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,10 @@ fun FoodScreen(
         ?.filterIsInstance<Category>()
         ?.find { it.name == categoryName }
         ?.items ?: emptyList()
+
+    if (foods.isEmpty()) {
+        Log.e("FoodScreen", "No foods found for category: $categoryName in restaurant: $restaurantName")
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),

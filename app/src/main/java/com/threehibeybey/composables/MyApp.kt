@@ -74,6 +74,22 @@ fun MyApp(
                     personalViewModel = personalViewModel
                 )
             }
+            // 新增的 composable 以處理 "restaurant/{restaurantName}" 路由
+            composable(
+                route = "restaurant/{restaurantName}",
+                arguments = listOf(
+                    navArgument("restaurantName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
+                CategoryScreen(
+                    navController = navController,
+                    restaurantName = restaurantName,
+                    restaurantViewModel = restaurantViewModel,
+                    selectedFoods = selectedFoods,
+                    setSelectedFoods = { selectedFoods = it }
+                )
+            }
         }
     }
 }

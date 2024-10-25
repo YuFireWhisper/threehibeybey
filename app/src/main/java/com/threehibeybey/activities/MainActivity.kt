@@ -1,5 +1,6 @@
 package com.threehibeybey.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +24,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 檢查使用者是否已登入
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            // 未登入，導向 LoginActivity
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         val restaurantRepository = RestaurantRepository()
         val historyRepository = HistoryRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
         personalViewModel = PersonalViewModel(historyRepository)

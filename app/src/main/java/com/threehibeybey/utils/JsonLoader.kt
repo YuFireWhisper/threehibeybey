@@ -28,6 +28,9 @@ class JsonLoader {
         } catch (e: IOException) {
             e.printStackTrace()
             emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 }

@@ -30,6 +30,15 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _authState: MutableStateFlow<AuthState> = MutableStateFlow(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
 
+    init {
+        // 檢查是否有已登入的使用者
+        val currentUser = authRepository.getCurrentUser()
+        if (currentUser != null) {
+            _user.value = currentUser
+            _authState.value = AuthState.Success
+        }
+    }
+
     /**
      * Attempts to log in the user with the provided email and password.
      */

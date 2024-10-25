@@ -6,21 +6,23 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.google.firebase.auth.FirebaseAuth
 import com.threehibeybey.composables.LoginPage
 import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.ui.theme.MyApplicationTheme
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.unit.dp
 
 /**
  * Activity responsible for handling user login.
@@ -46,6 +48,7 @@ class LoginActivity : ComponentActivity() {
                             }
                             is AuthState.Success -> {
                                 isLoading = false
+                                // 登入成功，導向 MainActivity
                                 startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                                 finish()
                             }

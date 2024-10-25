@@ -1,5 +1,6 @@
 package com.threehibeybey.composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,22 +47,33 @@ fun RestaurantScreen(
     if (error != null) {
         Text(text = error ?: "", color = MaterialTheme.colorScheme.error)
     } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(canteens) { canteen ->
-                RestaurantCard(canteen) {
-                    navController.navigate("restaurant/${canteen.name}")
+        if (canteens.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = "載入中...")
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(canteens) { canteen ->
+                    Log.d("RestaurantScreen", "載入餐廳: ${canteen.name}")
+                    RestaurantCard(canteen) {
+                        navController.navigate("restaurant/${canteen.name}")
+                    }
                 }
             }
-        }
 
-        // 懸浮卡片顯示邏輯
-        if (selectedFoods.isNotEmpty()) {
-            FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
+            // 懸浮卡片顯示邏輯
+            if (selectedFoods.isNotEmpty()) {
+                FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
+            }
         }
     }
 }

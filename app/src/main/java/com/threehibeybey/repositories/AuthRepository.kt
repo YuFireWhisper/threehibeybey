@@ -12,6 +12,13 @@ import kotlinx.coroutines.flow.callbackFlow
 class AuthRepository(private val firebaseAuth: FirebaseAuth) {
 
     /**
+     * Retrieves the current logged-in user.
+     */
+    fun getCurrentUser(): FirebaseUser? {
+        return firebaseAuth.currentUser
+    }
+
+    /**
      * Attempts to log in the user with the provided email and password.
      */
     fun login(email: String, password: String): Flow<AuthResult> = callbackFlow {
