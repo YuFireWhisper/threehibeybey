@@ -3,6 +3,7 @@ package com.threehibeybey.repositories
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.threehibeybey.models.FoodItem
+import com.threehibeybey.models.MenuItem
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -15,7 +16,7 @@ class HistoryRepository(private val firestore: FirebaseFirestore, private val fi
     /**
      * Adds a food item to the user's history in Firebase.
      */
-    suspend fun addFoodItem(foodItem: FoodItem): Boolean {
+    suspend fun addFoodItem(foodItem: MenuItem): Boolean {
         return try {
             val user = firebaseAuth.currentUser
             if (user != null) {

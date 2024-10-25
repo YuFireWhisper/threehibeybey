@@ -1,3 +1,4 @@
+// composables/CategoryScreen.kt
 package com.threehibeybey.composables
 
 import android.util.Log
@@ -23,25 +24,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.threehibeybey.models.Category
+import com.threehibeybey.models.MenuItem
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
- * Composable function for displaying the list of categories within a restaurant.
+ * 顯示特定餐廳的所有分類。
  */
 @Composable
 fun CategoryScreen(
     navController: NavController,
     restaurantName: String,
     restaurantViewModel: RestaurantViewModel,
-    selectedFoods: List<com.threehibeybey.models.FoodItem>,
-    setSelectedFoods: (List<com.threehibeybey.models.FoodItem>) -> Unit
+    selectedFoods: List<MenuItem>,
+    setSelectedFoods: (List<MenuItem>) -> Unit
 ) {
     val canteens by restaurantViewModel.canteens.collectAsState()
-    val categories = canteens
-        .flatMap { it.items }
-        .filterIsInstance<com.threehibeybey.models.Restaurant>()
+
+    // 找到對應的餐廳
+    val restaurant = canteens
+        .flatMap { it.restaurant.let { listOf(it) } }
         .find { it.name == restaurantName }
-        ?.items ?: emptyList()
+
+    // 從餐廳中提取所有分類
+    val categories: List<Category> = restaurant?.items?.map { it.category } ?: emptyList()
 
     if (categories.isEmpty()) {
         Log.e("CategoryScreen", "No categories found for restaurant: $restaurantName")
@@ -67,7 +72,7 @@ fun CategoryScreen(
 }
 
 /**
- * Card composable for each category.
+ * 每個分類的卡片組件。
  */
 @Composable
 fun CategoryCard(category: Category, onClick: () -> Unit) {

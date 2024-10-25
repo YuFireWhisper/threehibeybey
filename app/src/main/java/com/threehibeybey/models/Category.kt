@@ -1,9 +1,9 @@
 package com.threehibeybey.models
 
 /**
- * Data class representing a category within a restaurant.
+ * 資料類別表示分類，包含多個子分類。
  */
 data class Category(
     val name: String = "",
-    val items: List<FoodItem> = emptyList()
+    val items: List<SubcategoryWrapper> = emptyList()
 )

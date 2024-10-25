@@ -1,9 +1,8 @@
 package com.threehibeybey.models
 
 /**
- * Data class representing a school canteen.
+ * 資料類別表示學餐，包含一個餐廳。
  */
 data class SchoolCanteen(
-    val name: String = "",
-    val items: List<Any> = emptyList() // Can contain Restaurant or another SchoolCanteen
+    val restaurant: Restaurant
 )

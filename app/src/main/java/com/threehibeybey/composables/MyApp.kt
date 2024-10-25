@@ -25,7 +25,7 @@ fun MyApp(
     personalViewModel: PersonalViewModel
 ) {
     val navController = rememberNavController()
-    var selectedFoods by remember { mutableStateOf(listOf<com.threehibeybey.models.FoodItem>()) }
+    var selectedFoods by remember { mutableStateOf(listOf<com.threehibeybey.models.MenuItem>()) }
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController = navController) }
@@ -65,7 +65,6 @@ fun MyApp(
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
                 val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
                 FoodScreen(
-                    navController = navController,
                     restaurantName = restaurantName,
                     categoryName = categoryName,
                     restaurantViewModel = restaurantViewModel,
@@ -88,6 +87,15 @@ fun MyApp(
                     restaurantViewModel = restaurantViewModel,
                     selectedFoods = selectedFoods,
                     setSelectedFoods = { selectedFoods = it }
+                )
+            }
+            // 新增的 composable 處理 "familyMartInput" 路由
+            composable(
+                route = "familyMartInput"
+            ) {
+                FamilyMartInputScreen(
+                    navController = navController,
+                    restaurantViewModel = restaurantViewModel
                 )
             }
         }

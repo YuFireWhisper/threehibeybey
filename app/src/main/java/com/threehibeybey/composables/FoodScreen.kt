@@ -1,3 +1,4 @@
+// composables/FoodScreen.kt
 package com.threehibeybey.composables
 
 import android.util.Log
@@ -21,34 +22,37 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.threehibeybey.models.Category
-import com.threehibeybey.models.FoodItem
+import com.threehibeybey.models.MenuItem
+import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
- * Composable function for displaying the list of food items within a category.
+ * 顯示特定分類內的菜單項目。
  */
 @Composable
 fun FoodScreen(
-    navController: NavController,
     restaurantName: String,
     categoryName: String,
     restaurantViewModel: RestaurantViewModel,
-    selectedFoods: List<FoodItem>,
-    setSelectedFoods: (List<FoodItem>) -> Unit,
-    personalViewModel: com.threehibeybey.viewmodels.PersonalViewModel
+    selectedFoods: List<MenuItem>,
+    setSelectedFoods: (List<MenuItem>) -> Unit,
+    personalViewModel: PersonalViewModel
 ) {
     val canteens by restaurantViewModel.canteens.collectAsState()
-    val foods: List<FoodItem> = canteens
-        .flatMap { it.items }
-        .filterIsInstance<com.threehibeybey.models.Restaurant>()
+
+    // 找到對應的餐廳
+    val restaurant = canteens
+        .flatMap { it.restaurant.let { listOf(it) } }
         .find { it.name == restaurantName }
-        ?.items
-        ?.flatMap { it.items }
-        ?.filterIsInstance<Category>()
-        ?.find { it.name == categoryName }
-        ?.items ?: emptyList()
+
+    // 找到對應的分類
+    val categoryWrapper = restaurant?.items?.find { it.category.name == categoryName }
+    val subcategories = categoryWrapper?.category?.items ?: emptyList()
+
+    // 從子分類中提取菜單項目
+    val foods: List<MenuItem> = subcategories.flatMap { subcategoryWrapper ->
+        subcategoryWrapper.subcategory.items.map { it.menu_item }
+    }
 
     if (foods.isEmpty()) {
         Log.e("FoodScreen", "No foods found for category: $categoryName in restaurant: $restaurantName")
@@ -83,10 +87,10 @@ fun FoodScreen(
 }
 
 /**
- * Card composable for each food item.
+ * 每個菜單項目的卡片組件。
  */
 @Composable
-fun FoodCard(food: FoodItem, isSelected: Boolean, onClick: () -> Unit) {
+fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit)  {
     Card(
         modifier = Modifier
             .fillMaxWidth()

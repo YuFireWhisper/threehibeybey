@@ -1,3 +1,4 @@
+// utils/JsonLoader.kt
 package com.threehibeybey.utils
 
 import android.content.Context
@@ -7,12 +8,12 @@ import com.threehibeybey.models.SchoolCanteen
 import java.io.IOException
 
 /**
- * Utility class for loading JSON data from assets.
+ * 工具類別用於從assets加載和解析JSON數據。
  */
 class JsonLoader {
 
     /**
-     * Loads and parses the JSON file into a list of SchoolCanteen objects.
+     * 加載並解析JSON文件為SchoolCanteen物件列表。
      */
     fun loadJson(context: Context, fileName: String): List<SchoolCanteen> {
         return try {
@@ -23,8 +24,10 @@ class JsonLoader {
             inputStream.close()
             val json = String(buffer, Charsets.UTF_8)
             val gson = Gson()
-            val listType = object : TypeToken<List<SchoolCanteen>>() {}.type
-            gson.fromJson(json, listType)
+
+            val schoolCanteenType = object : TypeToken<SchoolCanteen>() {}.type
+            val schoolCanteen: SchoolCanteen = gson.fromJson(json, schoolCanteenType)
+            listOf(schoolCanteen)
         } catch (e: IOException) {
             e.printStackTrace()
             emptyList()

@@ -40,12 +40,14 @@ fun BottomNavigationBar(navController: NavController) {
                 label = { Text(text = item.title) },
                 selected = currentRoute == item.route || currentRoute?.startsWith(item.route) == true,
                 onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+                    if (currentRoute != item.route) { // 避免重複導航
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 }
             )

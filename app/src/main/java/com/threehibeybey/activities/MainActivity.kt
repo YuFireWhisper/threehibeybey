@@ -50,6 +50,6 @@ class MainActivity : ComponentActivity() {
 
         // Load and augment canteens
         restaurantViewModel.loadCanteens(JsonLoader(), this)
-        restaurantViewModel.augmentCanteens()
+        restaurantViewModel.addFamilyMart() // 修正方法名稱為 addFamilyMart()
     }
 }
