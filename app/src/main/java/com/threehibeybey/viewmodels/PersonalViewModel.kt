@@ -27,7 +27,7 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
         viewModelScope.launch {
             val result = historyRepository.addFoodItem(foodItem)
             if (result) {
-                _history.value = _history.value + foodItem
+                _history.value += foodItem
                 _historyState.value = HistoryState.Success
             } else {
                 _historyState.value = HistoryState.Error("無法新增至歷史紀錄。")

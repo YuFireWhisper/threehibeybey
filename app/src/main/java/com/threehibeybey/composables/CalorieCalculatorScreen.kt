@@ -1,12 +1,17 @@
 package com.threehibeybey.composables
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
+import java.util.Locale
 
 /**
  * Composable function for the calorie calculator screen UI.
@@ -34,7 +39,7 @@ fun CalorieCalculatorScreen() {
             onValueChange = { height = it },
             label = { Text("身高 (cm)") },
             singleLine = true,
-            keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -43,7 +48,7 @@ fun CalorieCalculatorScreen() {
             onValueChange = { weight = it },
             label = { Text("體重 (kg)") },
             singleLine = true,
-            keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -65,7 +70,7 @@ fun CalorieCalculatorScreen() {
 
         if (bmi != null) {
             Text(
-                text = "您的 BMI 是: ${String.format("%.2f", bmi)}",
+                text = "您的 BMI 是: ${String.format(Locale.getDefault(), "%.2f", bmi)}",
                 style = MaterialTheme.typography.bodyLarge
             )
         } else {
