@@ -136,9 +136,9 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
      * Represents the state of history-related operations.
      */
     sealed class HistoryState {
-        object Idle : HistoryState()
-        object Loading : HistoryState()
-        object Success : HistoryState()
+        data object Idle : HistoryState()
+        data object Loading : HistoryState()
+        data object Success : HistoryState()
         data class Error(val message: String) : HistoryState()
     }
 }

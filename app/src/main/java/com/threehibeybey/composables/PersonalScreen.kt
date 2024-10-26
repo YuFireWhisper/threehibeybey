@@ -1,6 +1,7 @@
 package com.threehibeybey.composables
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,15 +9,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,13 +37,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
+
+data class SettingsOption(
+    val title: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit,
+    val type: OptionType = OptionType.NORMAL
+)
+
+enum class OptionType {
+    NORMAL,
+    DANGEROUS,
+    ACCENT
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +87,7 @@ fun PersonalScreen(
                 authViewModel.resetAuthState()
             }
             is AuthState.Error -> {
-                val errorMessage = (authState as AuthState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_SHORT).show()
                 authViewModel.resetAuthState()
             }
             else -> {}
@@ -72,60 +96,84 @@ fun PersonalScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text("個人設置") },
-                colors = TopAppBarDefaults.topAppBarColors()
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
-        },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Button(
-                    onClick = { showChangePasswordDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("變更密碼")
-                }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "資料與紀錄",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
 
-                Button(
-                    onClick = { showChangeEmailDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("變更電子郵件")
-                }
+            val dataOptions = listOf(
+                SettingsOption(
+                    "歷史紀錄",
+                    Icons.Default.History,
+                    onViewHistory,
+                    OptionType.ACCENT
+                )
+            )
 
-                Button(
-                    onClick = { showDeleteAccountDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("刪除帳號")
-                }
+            SettingsGroup(dataOptions)
 
-                Button(
-                    onClick = onViewHistory,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("歷史紀錄")
-                }
+            Text(
+                "帳號管理",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
 
-                Button(
-                    onClick = {
+            val accountOptions = listOf(
+                SettingsOption(
+                    "變更密碼",
+                    Icons.Default.Lock,
+                    { showChangePasswordDialog = true }
+                ),
+                SettingsOption(
+                    "變更電子郵件",
+                    Icons.Default.Email,
+                    { showChangeEmailDialog = true }
+                )
+            )
+
+            SettingsGroup(accountOptions)
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            val dangerOptions = listOf(
+                SettingsOption(
+                    "登出",
+                    Icons.Default.ExitToApp,
+                    {
                         authViewModel.logout()
                         onLogout()
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("登出")
-                }
-            }
+                    OptionType.DANGEROUS
+                ),
+                SettingsOption(
+                    "刪除帳號",
+                    Icons.Default.Delete,
+                    { showDeleteAccountDialog = true },
+                    OptionType.DANGEROUS
+                )
+            )
+
+            SettingsGroup(dangerOptions)
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
-    )
+    }
 
     if (showChangePasswordDialog) {
         ChangePasswordDialog(
@@ -159,7 +207,63 @@ fun PersonalScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsGroup(options: List<SettingsOption>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column {
+            options.forEachIndexed { index, option ->
+                SettingsItem(
+                    option = option,
+                    showDivider = index < options.size - 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsItem(
+    option: SettingsOption,
+    showDivider: Boolean
+) {
+    Column {
+        ListItem(
+            headlineContent = {
+                Text(
+                    option.title,
+                    color = when (option.type) {
+                        OptionType.DANGEROUS -> MaterialTheme.colorScheme.error
+                        OptionType.ACCENT -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+                )
+            },
+            leadingContent = {
+                Icon(
+                    imageVector = option.icon,
+                    contentDescription = null,
+                    tint = when (option.type) {
+                        OptionType.DANGEROUS -> MaterialTheme.colorScheme.error
+                        OptionType.ACCENT -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            },
+            modifier = Modifier.clickable(onClick = option.onClick)
+        )
+        if (showDivider) {
+            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+        }
+    }
+}
+
+
 @Composable
 fun ChangePasswordDialog(currentEmail: String, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
     var email by remember { mutableStateOf(currentEmail) }
@@ -287,4 +391,3 @@ fun DeleteAccountDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
         }
     )
 }
-
