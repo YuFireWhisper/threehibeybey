@@ -61,19 +61,18 @@ fun FoodScreen(
     val category = restaurant?.items?.find { it.name == categoryName }
     val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
 
+    // Only show Toast when historyState is Success and after a save action
     LaunchedEffect(historyState) {
-        when (historyState) {
-            is PersonalViewModel.HistoryState.Success -> {
-                Toast.makeText(context, "已保存至歷史紀錄", Toast.LENGTH_SHORT).show()
-            }
-            is PersonalViewModel.HistoryState.Error -> {
-                Toast.makeText(
-                    context,
-                    (historyState as PersonalViewModel.HistoryState.Error).message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            else -> {}
+        if (historyState is PersonalViewModel.HistoryState.Success && selectedFoods.isEmpty()) {
+            Toast.makeText(context, "已保存至歷史紀錄", Toast.LENGTH_SHORT).show()
+            personalViewModel.resetHistoryState() // Reset history state after showing the Toast
+        } else if (historyState is PersonalViewModel.HistoryState.Error) {
+            Toast.makeText(
+                context,
+                (historyState as PersonalViewModel.HistoryState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
+            personalViewModel.resetHistoryState() // Reset history state after error
         }
     }
 
@@ -95,7 +94,6 @@ fun FoodScreen(
                     modifier = Modifier.padding(innerPadding)
                 )
             } else {
-                // Use Column to arrange content and FloatingSummaryCard
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -106,16 +104,15 @@ fun FoodScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.weight(1f) // Take available space
+                        modifier = Modifier.weight(1f)
                     ) {
                         items(foods) { food ->
                             FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
-                                // Update selected foods list
                                 setSelectedFoods(
                                     if (selectedFoods.contains(food)) {
-                                        selectedFoods - food // Deselect
+                                        selectedFoods - food
                                     } else {
-                                        selectedFoods + food // Select
+                                        selectedFoods + food
                                     }
                                 )
                             }
@@ -127,7 +124,6 @@ fun FoodScreen(
                             selectedFoods = selectedFoods,
                             onClear = { setSelectedFoods(emptyList()) },
                             onConfirm = {
-                                // Save selected foods to history
                                 personalViewModel.saveSelectedFoods(
                                     selectedFoods = selectedFoods,
                                     restaurantName = restaurantName
