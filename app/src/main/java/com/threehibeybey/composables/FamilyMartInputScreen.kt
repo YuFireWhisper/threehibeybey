@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.threehibeybey.models.MenuItem // 修改為 MenuItem
+import com.threehibeybey.models.MenuItem
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
@@ -83,12 +83,12 @@ fun FamilyMartInputScreen(
         Button(
             onClick = {
                 val priceValue = price.toIntOrNull()
-                val caloriesValue = calories.toFloatOrNull()
+                val caloriesValue = calories.toDoubleOrNull() // 將 toFloatOrNull() 改為 toDoubleOrNull()
                 if (name.isNotBlank() && priceValue != null && caloriesValue != null) {
-                    val newFood = MenuItem( // 修改為 MenuItem
+                    val newFood = MenuItem(
                         name = name,
                         price = priceValue,
-                        calories = caloriesValue
+                        calories = caloriesValue // 型別現在為 Double
                     )
                     // 將新品項添加到 "全家便利商店"
                     restaurantViewModel.addFamilyMartFoodItem(newFood)

@@ -1,22 +1,18 @@
 package com.threehibeybey.composables
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
@@ -32,16 +28,6 @@ fun MyApp(
 ) {
     val navController = rememberNavController()
     var selectedFoods by remember { mutableStateOf(listOf<com.threehibeybey.models.MenuItem>()) }
-
-    val context = LocalContext.current
-    val authState by authViewModel.authState.collectAsState()
-
-    // Observe authentication state for error messages
-    if (authState is AuthState.Error) {
-        Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_SHORT).show()
-    } else if (authState is AuthState.Success) {
-        Toast.makeText(context, "操作成功", Toast.LENGTH_SHORT).show()
-    }
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController = navController) }
@@ -68,8 +54,8 @@ fun MyApp(
                     onChangePassword = { currentPassword, newPassword ->
                         authViewModel.updatePassword(newPassword, currentPassword)
                     },
-                    onChangeEmail = { newEmail ->
-                        authViewModel.updateEmail(newEmail)
+                    onChangeEmail = { newEmail, currentPassword -> // 修改此處
+                        authViewModel.updateEmail(newEmail, currentPassword)
                     },
                     onDeleteAccount = { password ->
                         authViewModel.deleteAccount(password)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -55,14 +56,9 @@ fun FoodScreen(
     val context = LocalContext.current
     val historyState by personalViewModel.historyState.collectAsState()
 
-    // 定義 foods 變數
-    // 找到對應的餐廳
+    // Find the corresponding restaurant and category
     val restaurant = restaurants.find { it.name == restaurantName }
-
-    // 從餐廳中找到對應的分類
     val category = restaurant?.items?.find { it.name == categoryName }
-
-    // 從分類中取得所有的菜單項目
     val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
 
     LaunchedEffect(historyState) {
@@ -99,21 +95,27 @@ fun FoodScreen(
                     modifier = Modifier.padding(innerPadding)
                 )
             } else {
-                Box(modifier = Modifier.padding(innerPadding)) {
+                // Use Column to arrange content and FloatingSummaryCard
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.weight(1f) // Take available space
                     ) {
                         items(foods) { food ->
                             FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
-                                // 更新選擇的食物列表
+                                // Update selected foods list
                                 setSelectedFoods(
                                     if (selectedFoods.contains(food)) {
-                                        selectedFoods - food // 取消選擇
+                                        selectedFoods - food // Deselect
                                     } else {
-                                        selectedFoods + food // 選擇
+                                        selectedFoods + food // Select
                                     }
                                 )
                             }
@@ -125,7 +127,7 @@ fun FoodScreen(
                             selectedFoods = selectedFoods,
                             onClear = { setSelectedFoods(emptyList()) },
                             onConfirm = {
-                                // 保存選擇的食物至歷史紀錄
+                                // Save selected foods to history
                                 personalViewModel.saveSelectedFoods(
                                     selectedFoods = selectedFoods,
                                     restaurantName = restaurantName
@@ -157,26 +159,28 @@ fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         }
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = food.name,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "價格: ${food.price} 元",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = "熱量: ${food.calories} 大卡",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = food.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "價格: ${food.price} 元",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "熱量: ${food.calories} 大卡",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }

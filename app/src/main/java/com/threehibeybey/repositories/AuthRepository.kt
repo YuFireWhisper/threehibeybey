@@ -1,5 +1,6 @@
 package com.threehibeybey.repositories
 
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.channels.awaitClose
@@ -58,33 +59,32 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
     }
 
     /**
-     * Sends a password reset email to the specified email address.
-     */
-    fun sendPasswordReset(email: String): Flow<AuthResult> = callbackFlow {
-        firebaseAuth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    trySend(AuthResult.Success(null))
-                } else {
-                    trySend(AuthResult.Error(task.exception?.localizedMessage ?: "發送密碼重設郵件失敗。"))
-                }
-            }
-        awaitClose { }
-    }
-
-    /**
      * Updates the user's email after re-authentication.
+     *
+     * @param newEmail The new email to set.
+     * @param currentPassword The current password for re-authentication.
      */
-    fun updateEmail(newEmail: String): Flow<AuthResult> = callbackFlow {
+    fun updateEmail(newEmail: String, currentPassword: String): Flow<AuthResult> = callbackFlow {
         val user = firebaseAuth.currentUser
-        user?.updateEmail(newEmail)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    trySend(AuthResult.Success(user))
+        if (user != null) {
+            val credential = EmailAuthProvider.getCredential(user.email ?: "", currentPassword)
+            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
+                if (reAuthTask.isSuccessful) {
+                    user.updateEmail(newEmail)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                trySend(AuthResult.Success(user))
+                            } else {
+                                trySend(AuthResult.Error(task.exception?.localizedMessage ?: "更新電子郵件失敗。"))
+                            }
+                        }
                 } else {
-                    trySend(AuthResult.Error(task.exception?.localizedMessage ?: "更新電子郵件失敗。"))
+                    trySend(AuthResult.Error(reAuthTask.exception?.localizedMessage ?: "重新驗證失敗。"))
                 }
             }
+        } else {
+            trySend(AuthResult.Error("使用者未登入。"))
+        }
         awaitClose { }
     }
 
@@ -93,20 +93,24 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
      */
     fun updatePassword(newPassword: String, currentPassword: String): Flow<AuthResult> = callbackFlow {
         val user = firebaseAuth.currentUser
-        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user?.email ?: "", currentPassword)
-        user?.reauthenticate(credential)?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                user.updatePassword(newPassword)
-                    .addOnCompleteListener { updateTask ->
-                        if (updateTask.isSuccessful) {
-                            trySend(AuthResult.Success(user))
-                        } else {
-                            trySend(AuthResult.Error(updateTask.exception?.localizedMessage ?: "更新密碼失敗。"))
+        if (user != null) {
+            val credential = EmailAuthProvider.getCredential(user.email ?: "", currentPassword)
+            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
+                if (reAuthTask.isSuccessful) {
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                trySend(AuthResult.Success(user))
+                            } else {
+                                trySend(AuthResult.Error(task.exception?.localizedMessage ?: "更新密碼失敗。"))
+                            }
                         }
-                    }
-            } else {
-                trySend(AuthResult.Error(task.exception?.localizedMessage ?: "重新驗證失敗。"))
+                } else {
+                    trySend(AuthResult.Error(reAuthTask.exception?.localizedMessage ?: "重新驗證失敗。"))
+                }
             }
+        } else {
+            trySend(AuthResult.Error("使用者未登入。"))
         }
         awaitClose { }
     }
@@ -116,20 +120,24 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
      */
     fun deleteAccount(password: String): Flow<AuthResult> = callbackFlow {
         val user = firebaseAuth.currentUser
-        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user?.email ?: "", password)
-        user?.reauthenticate(credential)?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                user.delete()
-                    .addOnCompleteListener { deleteTask ->
-                        if (deleteTask.isSuccessful) {
-                            trySend(AuthResult.Success(null))
-                        } else {
-                            trySend(AuthResult.Error(deleteTask.exception?.localizedMessage ?: "刪除帳號失敗。"))
+        if (user != null) {
+            val credential = EmailAuthProvider.getCredential(user.email ?: "", password)
+            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
+                if (reAuthTask.isSuccessful) {
+                    user.delete()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                trySend(AuthResult.Success(null))
+                            } else {
+                                trySend(AuthResult.Error(task.exception?.localizedMessage ?: "刪除帳號失敗。"))
+                            }
                         }
-                    }
-            } else {
-                trySend(AuthResult.Error(task.exception?.localizedMessage ?: "重新驗證失敗。"))
+                } else {
+                    trySend(AuthResult.Error(reAuthTask.exception?.localizedMessage ?: "重新驗證失敗。"))
+                }
             }
+        } else {
+            trySend(AuthResult.Error("使用者未登入。"))
         }
         awaitClose { }
     }

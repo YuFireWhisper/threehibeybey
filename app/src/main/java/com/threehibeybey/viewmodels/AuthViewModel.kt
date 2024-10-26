@@ -15,7 +15,11 @@ import kotlinx.coroutines.launch
 sealed class AuthState {
     data object Idle : AuthState()
     data object Loading : AuthState()
-    data object Success : AuthState()
+    data object LoginSuccess : AuthState()
+    data object RegisterSuccess : AuthState()
+    data object UpdateEmailSuccess : AuthState()
+    data object UpdatePasswordSuccess : AuthState()
+    data object DeleteAccountSuccess : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -31,11 +35,11 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val authState: StateFlow<AuthState> = _authState
 
     init {
-        // 檢查是否有已登入的使用者
+        // Check if there is a logged-in user
         val currentUser = authRepository.getCurrentUser()
         if (currentUser != null) {
             _user.value = currentUser
-            _authState.value = AuthState.Success
+            _authState.value = AuthState.Idle
         }
     }
 
@@ -59,7 +63,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
                         _user.value = result.user
-                        _authState.value = AuthState.Success
+                        _authState.value = AuthState.LoginSuccess
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
@@ -89,7 +93,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
                         _user.value = result.user
-                        _authState.value = AuthState.Success
+                        _authState.value = AuthState.RegisterSuccess
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
@@ -109,32 +113,12 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     }
 
     /**
-     * Sends a password reset email.
-     */
-    fun sendPasswordReset(email: String) {
-        if (!ValidationUtils.isValidEmail(email)) {
-            _authState.value = AuthState.Error("無效的電子郵件格式。")
-            return
-        }
-
-        viewModelScope.launch {
-            authRepository.sendPasswordReset(email).collect { result ->
-                when (result) {
-                    is AuthRepository.AuthResult.Success -> {
-                        _authState.value = AuthState.Success
-                    }
-                    is AuthRepository.AuthResult.Error -> {
-                        _authState.value = AuthState.Error(result.message)
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Updates the user's email after re-authentication.
+     *
+     * @param newEmail The new email to set.
+     * @param currentPassword The current password for re-authentication.
      */
-    fun updateEmail(newEmail: String, password: String) {
+    fun updateEmail(newEmail: String, currentPassword: String) {
         if (!ValidationUtils.isValidEmail(newEmail)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
             return
@@ -142,10 +126,10 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            authRepository.updateEmail(newEmail).collect { result ->
+            authRepository.updateEmail(newEmail, currentPassword).collect { result ->
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
-                        _authState.value = AuthState.Success
+                        _authState.value = AuthState.UpdateEmailSuccess
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
@@ -169,7 +153,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             authRepository.updatePassword(newPassword, currentPassword).collect { result ->
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
-                        _authState.value = AuthState.Success
+                        _authState.value = AuthState.UpdatePasswordSuccess
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
@@ -189,31 +173,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
                         _user.value = null
-                        _authState.value = AuthState.Success
-                    }
-                    is AuthRepository.AuthResult.Error -> {
-                        _authState.value = AuthState.Error(result.message)
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Updates the user's email.
-     */
-    fun updateEmail(newEmail: String) {
-        if (!ValidationUtils.isValidEmail(newEmail)) {
-            _authState.value = AuthState.Error("無效的電子郵件格式。")
-            return
-        }
-
-        _authState.value = AuthState.Loading
-        viewModelScope.launch {
-            authRepository.updateEmail(newEmail).collect { result ->
-                when (result) {
-                    is AuthRepository.AuthResult.Success -> {
-                        _authState.value = AuthState.Success
+                        _authState.value = AuthState.DeleteAccountSuccess
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)

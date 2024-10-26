@@ -51,7 +51,7 @@ class LoginActivity : ComponentActivity() {
                             is AuthState.Loading -> {
                                 isLoading = true
                             }
-                            is AuthState.Success -> {
+                            is AuthState.LoginSuccess -> {
                                 isLoading = false
                                 // 登入成功，導向 MainActivity
                                 startActivity(Intent(this@LoginActivity, MainActivity::class.java))
@@ -61,7 +61,7 @@ class LoginActivity : ComponentActivity() {
                                 isLoading = false
                                 Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
                             }
-                            is AuthState.Idle -> {
+                            else -> {
                                 isLoading = false
                             }
                         }

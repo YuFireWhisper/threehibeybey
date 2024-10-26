@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -72,12 +73,18 @@ fun CategoryScreen(
                     modifier = Modifier.padding(innerPadding)
                 )
             } else {
-                Box(modifier = Modifier.padding(innerPadding)) {
+                // Use Column to arrange content and FloatingSummaryCard
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.weight(1f) // Take available space
                     ) {
                         items(categories) { category ->
                             CategoryCard(category) {
@@ -92,7 +99,6 @@ fun CategoryScreen(
                             onClear = { setSelectedFoods(emptyList()) },
                             onConfirm = {
                                 // Handle confirm action
-                                // Save to history if needed
                             }
                         )
                     }
@@ -114,11 +120,11 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center
         ) {
             Text(
                 text = category.name,

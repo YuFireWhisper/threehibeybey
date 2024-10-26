@@ -6,5 +6,5 @@ package com.threehibeybey.models
 data class MenuItem(
     val name: String = "",
     val price: Int = 0,
-    val calories: Float = 0f
+    val calories: Double = 0.0
 )

@@ -60,7 +60,7 @@ class RegisterActivity : ComponentActivity() {
                     is AuthState.Loading -> {
                         // Show loading indicator if necessary
                     }
-                    is AuthState.Success -> {
+                    is AuthState.RegisterSuccess -> {
                         Toast.makeText(this@RegisterActivity, "註冊成功，請登入。", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
                         finish()

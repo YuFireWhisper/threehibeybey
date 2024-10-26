@@ -70,10 +70,21 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
     fun getHistory() {
         _historyState.value = HistoryState.Loading
         viewModelScope.launch {
-            val historyItems = historyRepository.getHistory()
-            _history.value = historyItems
-            _historyState.value = HistoryState.Success
+            try {
+                val historyItems = historyRepository.getHistory()
+                _history.value = historyItems
+                _historyState.value = HistoryState.Success
+            } catch (e: Exception) {
+                _historyState.value = HistoryState.Error("無法獲取歷史紀錄。")
+            }
         }
+    }
+
+    /**
+     * Resets the history state to Idle.
+     */
+    fun resetHistoryState() {
+        _historyState.value = HistoryState.Idle
     }
 
     /**
