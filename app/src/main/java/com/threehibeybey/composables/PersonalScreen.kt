@@ -152,25 +152,13 @@ fun PersonalScreen(
 
             SettingsGroup(accountOptions)
 
-            Text(
-                "偏好設置",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-
-            // Display preferences
-            PreferencesGroup(preferences, preferenceViewModel)
-
             Spacer(modifier = Modifier.weight(1f))
 
             val dangerOptions = listOf(
                 SettingsOption(
                     "登出",
                     Icons.Default.ExitToApp,
-                    {
-                        authViewModel.logout()
-                        onLogout()
-                    },
+                    onLogout,
                     OptionType.DANGEROUS
                 ),
                 SettingsOption(

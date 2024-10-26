@@ -18,9 +18,6 @@ import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.PreferenceViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
-/**
- * Main activity that hosts the application's navigation and screens.
- */
 class MainActivity : ComponentActivity() {
 
     private lateinit var restaurantViewModel: RestaurantViewModel
@@ -70,7 +67,6 @@ class MainActivity : ComponentActivity() {
                     authViewModel = authViewModel,
                     preferenceViewModel = preferenceViewModel,
                     onLogout = {
-                        // Navigate to LoginActivity when user logs out
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                         finish()
                     }

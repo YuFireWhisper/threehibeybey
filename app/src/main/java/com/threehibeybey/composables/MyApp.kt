@@ -18,9 +18,6 @@ import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.PreferenceViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
-/**
- * Composable function that sets up the navigation graph and screens.
- */
 @Composable
 fun MyApp(
     restaurantViewModel: RestaurantViewModel,
@@ -52,7 +49,7 @@ fun MyApp(
             composable("personal") {
                 PersonalScreen(
                     authViewModel = authViewModel,
-                    preferenceViewModel = preferenceViewModel, // Pass the preferenceViewModel
+                    preferenceViewModel = preferenceViewModel,
                     onViewHistory = { navController.navigate("history") },
                     onLogout = {
                         authViewModel.logout()

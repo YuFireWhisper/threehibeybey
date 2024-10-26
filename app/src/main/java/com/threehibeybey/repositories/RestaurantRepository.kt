@@ -20,13 +20,6 @@ class RestaurantRepository {
     }
 
     /**
-     * Updates a restaurant in Firestore.
-     */
-    suspend fun updateRestaurant(restaurant: PreferenceRestaurant): Boolean {
-        return preferencesRepository.updateRestaurant(restaurant)
-    }
-
-    /**
      * Adds an item to FamilyMart's menu.
      */
     suspend fun addFamilyMartItem(menuItem: MenuItem): Boolean {

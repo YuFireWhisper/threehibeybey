@@ -32,6 +32,7 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
             try {
                 val loadedCanteens = restaurantRepository.loadSchoolCanteens()
                 _schoolCanteens.value = loadedCanteens
+                _error.value = null
             } catch (e: Exception) {
                 _error.value = "無法載入學餐資料。"
             }
@@ -54,5 +55,12 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
                 _error.value = "發生錯誤：${e.message}"
             }
         }
+    }
+
+    /**
+     * Clears any error state.
+     */
+    fun clearError() {
+        _error.value = null
     }
 }

@@ -1,14 +1,14 @@
 package com.threehibeybey.models
 
 /**
- * Data class representing a restaurant document in the preferences collection.
+ * Data class representing a restaurant document in Firestore.
  */
 data class PreferenceRestaurant(
     val name: String = "",
     val items: List<Any> = emptyList()
 ) {
     /**
-     * Converts preference data to SchoolCanteen model.
+     * Converts Firestore data to SchoolCanteen model.
      */
     fun toSchoolCanteen(): SchoolCanteen {
         return SchoolCanteen(
