@@ -24,7 +24,8 @@ import com.threehibeybey.viewmodels.RestaurantViewModel
 fun MyApp(
     restaurantViewModel: RestaurantViewModel,
     personalViewModel: PersonalViewModel,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    onLogout: () -> Unit // 新增此參數
 ) {
     val navController = rememberNavController()
     var selectedFoods by remember { mutableStateOf(listOf<com.threehibeybey.models.MenuItem>()) }
@@ -54,13 +55,17 @@ fun MyApp(
                     onChangePassword = { currentPassword, newPassword ->
                         authViewModel.updatePassword(newPassword, currentPassword)
                     },
-                    onChangeEmail = { newEmail, currentPassword -> // 修改此處
+                    onChangeEmail = { newEmail, currentPassword ->
                         authViewModel.updateEmail(newEmail, currentPassword)
                     },
                     onDeleteAccount = { password ->
                         authViewModel.deleteAccount(password)
                     },
-                    onViewHistory = { navController.navigate("history") }
+                    onViewHistory = { navController.navigate("history") },
+                    onLogout = {
+                        authViewModel.logout()
+                        onLogout() // 呼叫傳入的 onLogout
+                    }
                 )
             }
             composable(

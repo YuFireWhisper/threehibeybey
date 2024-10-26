@@ -16,9 +16,6 @@ import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
-/**
- * Activity responsible for handling user registration.
- */
 class RegisterActivity : ComponentActivity() {
 
     private lateinit var authViewModel: AuthViewModel
@@ -50,9 +47,6 @@ class RegisterActivity : ComponentActivity() {
         observeViewModel()
     }
 
-    /**
-     * Observes changes in the AuthViewModel and updates UI accordingly.
-     */
     private fun observeViewModel() {
         lifecycleScope.launch {
             authViewModel.authState.collect { state ->
@@ -67,6 +61,7 @@ class RegisterActivity : ComponentActivity() {
                     }
                     is AuthState.Error -> {
                         Toast.makeText(this@RegisterActivity, state.message, Toast.LENGTH_SHORT).show()
+                        authViewModel.resetAuthState()
                     }
                     else -> {}
                 }

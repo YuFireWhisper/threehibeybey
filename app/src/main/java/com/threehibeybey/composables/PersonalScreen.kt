@@ -12,7 +12,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextButton // Ensure this is imported
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,20 +23,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.dp // Ensure this is imported
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
 
-/**
- * Composable function for the personal screen UI.
- */
 @Composable
 fun PersonalScreen(
     authViewModel: AuthViewModel,
     onChangePassword: (String, String) -> Unit,
-    onChangeEmail: (String, String) -> Unit, // 修改此處，接受 currentPassword
+    onChangeEmail: (String, String) -> Unit,
     onDeleteAccount: (String) -> Unit,
-    onViewHistory: () -> Unit
+    onViewHistory: () -> Unit,
+    onLogout: () -> Unit
 ) {
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showChangeEmailDialog by remember { mutableStateOf(false) }
@@ -49,15 +47,21 @@ fun PersonalScreen(
         when (authState) {
             is AuthState.UpdateEmailSuccess -> {
                 Toast.makeText(context, "電子郵件更新成功", Toast.LENGTH_SHORT).show()
+                authViewModel.resetAuthState() // Reset state
             }
             is AuthState.UpdatePasswordSuccess -> {
                 Toast.makeText(context, "密碼更新成功", Toast.LENGTH_SHORT).show()
+                authViewModel.resetAuthState()
             }
             is AuthState.DeleteAccountSuccess -> {
                 Toast.makeText(context, "帳號已刪除", Toast.LENGTH_SHORT).show()
+                authViewModel.resetAuthState()
+                onLogout() // Perform logout action
             }
             is AuthState.Error -> {
-                Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+                val errorMessage = (authState as AuthState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                authViewModel.resetAuthState()
             }
             else -> {}
         }
@@ -66,8 +70,9 @@ fun PersonalScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "個人設置",
@@ -77,21 +82,21 @@ fun PersonalScreen(
 
         Button(
             onClick = { showChangePasswordDialog = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Text("變更密碼")
         }
 
         Button(
             onClick = { showChangeEmailDialog = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Text("變更電子郵件")
         }
 
         Button(
             onClick = { showDeleteAccountDialog = true },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(0.8f),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
             Text("刪除帳號")
@@ -99,9 +104,19 @@ fun PersonalScreen(
 
         Button(
             onClick = onViewHistory,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Text("歷史紀錄")
+        }
+
+        Button(
+            onClick = {
+                authViewModel.logout()
+                onLogout()
+            },
+            modifier = Modifier.fillMaxWidth(0.8f)
+        ) {
+            Text("登出")
         }
     }
 
@@ -117,7 +132,7 @@ fun PersonalScreen(
 
     if (showChangeEmailDialog) {
         ChangeEmailDialog(
-            onConfirm = { newEmail, currentPassword -> // 修改此處，接受 currentPassword
+            onConfirm = { newEmail, currentPassword ->
                 onChangeEmail(newEmail, currentPassword)
                 showChangeEmailDialog = false
             },
@@ -140,8 +155,7 @@ fun PersonalScreen(
 fun ChangePasswordDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> Unit) {
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
-    var currentPasswordError by remember { mutableStateOf("") }
-    var newPasswordError by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -152,42 +166,35 @@ fun ChangePasswordDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> U
                     value = currentPassword,
                     onValueChange = {
                         currentPassword = it
-                        currentPasswordError = if (currentPassword.isNotEmpty()) {
+                        errorMessage = if (currentPassword.isNotEmpty()) {
                             ""
                         } else {
-                            "請輸入當前密碼"
+                            "請輸入當前密碼。"
                         }
                     },
                     label = { Text("當前密碼") },
-                    isError = currentPasswordError.isNotEmpty(),
+                    isError = errorMessage.isNotEmpty(),
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
                 )
-                if (currentPasswordError.isNotEmpty()) {
-                    Text(
-                        text = currentPasswordError,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = {
                         newPassword = it
-                        newPasswordError = if (newPassword.length >= 8) {
+                        errorMessage = if (newPassword.isNotEmpty()) {
                             ""
                         } else {
-                            "新密碼長度至少為8位"
+                            "請輸入新密碼。"
                         }
                     },
                     label = { Text("新密碼") },
-                    isError = newPasswordError.isNotEmpty(),
+                    isError = errorMessage.isNotEmpty(),
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
                 )
-                if (newPasswordError.isNotEmpty()) {
+                if (errorMessage.isNotEmpty()) {
                     Text(
-                        text = newPasswordError,
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -196,7 +203,7 @@ fun ChangePasswordDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> U
         },
         confirmButton = {
             TextButton(onClick = {
-                if (currentPasswordError.isEmpty() && newPasswordError.isEmpty()) {
+                if (errorMessage.isEmpty()) {
                     onConfirm(currentPassword, newPassword)
                 }
             }) {
@@ -215,8 +222,7 @@ fun ChangePasswordDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> U
 fun ChangeEmailDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> Unit) {
     var newEmail by remember { mutableStateOf("") }
     var currentPassword by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var currentPasswordError by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -227,41 +233,34 @@ fun ChangeEmailDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> Unit
                     value = newEmail,
                     onValueChange = {
                         newEmail = it
-                        emailError = if (android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+                        errorMessage = if (android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
                             ""
                         } else {
-                            "電子郵件格式不正確。"
+                            "請輸入有效的電子郵件。"
                         }
                     },
                     label = { Text("新電子郵件") },
-                    isError = emailError.isNotEmpty(),
+                    isError = errorMessage.isNotEmpty(),
                     singleLine = true
                 )
-                if (emailError.isNotEmpty()) {
-                    Text(
-                        text = emailError,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
                 OutlinedTextField(
                     value = currentPassword,
                     onValueChange = {
                         currentPassword = it
-                        currentPasswordError = if (currentPassword.isNotEmpty()) {
+                        errorMessage = if (currentPassword.isNotEmpty()) {
                             ""
                         } else {
                             "請輸入當前密碼。"
                         }
                     },
                     label = { Text("當前密碼") },
-                    isError = currentPasswordError.isNotEmpty(),
+                    isError = errorMessage.isNotEmpty(),
                     singleLine = true,
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
                 )
-                if (currentPasswordError.isNotEmpty()) {
+                if (errorMessage.isNotEmpty()) {
                     Text(
-                        text = currentPasswordError,
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -270,7 +269,7 @@ fun ChangeEmailDialog(onConfirm: (String, String) -> Unit, onDismiss: () -> Unit
         },
         confirmButton = {
             TextButton(onClick = {
-                if (emailError.isEmpty() && currentPasswordError.isEmpty()) {
+                if (errorMessage.isEmpty()) {
                     onConfirm(newEmail, currentPassword)
                 }
             }) {

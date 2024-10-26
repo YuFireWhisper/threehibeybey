@@ -59,7 +59,12 @@ class MainActivity : ComponentActivity() {
                 MyApp(
                     restaurantViewModel = restaurantViewModel,
                     personalViewModel = personalViewModel,
-                    authViewModel = authViewModel
+                    authViewModel = authViewModel,
+                    onLogout = {
+                        // Navigate to LoginActivity when user logs out
+                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                        finish()
+                    }
                 )
             }
         }

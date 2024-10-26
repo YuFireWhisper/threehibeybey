@@ -9,11 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel for handling personal-related operations.
- *
- * @param historyRepository The repository for history data.
- */
 class PersonalViewModel(private val historyRepository: HistoryRepository) : ViewModel() {
 
     private val _history: MutableStateFlow<List<HistoryItem>> = MutableStateFlow(emptyList())
@@ -22,26 +17,28 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
     private val _historyState: MutableStateFlow<HistoryState> = MutableStateFlow(HistoryState.Idle)
     val historyState: StateFlow<HistoryState> = _historyState
 
-    /**
-     * Adds a single food item to the history.
-     *
-     * @param foodItem The food item to add.
-     */
+    // 選擇的歷史項目，用於詳細資訊或編輯
+    private val _selectedHistoryItem: MutableStateFlow<HistoryItem?> = MutableStateFlow(null)
+    val selectedHistoryItem: StateFlow<HistoryItem?> = _selectedHistoryItem
+
+    fun selectHistoryItem(item: HistoryItem?) {
+        _selectedHistoryItem.value = item
+    }
+
     fun addToHistory(foodItem: MenuItem) {
         _historyState.value = HistoryState.Loading
         viewModelScope.launch {
             val result = historyRepository.addFoodItem(foodItem)
             if (result) {
                 _historyState.value = HistoryState.Success
+                // 刷新歷史紀錄
+                getHistory()
             } else {
                 _historyState.value = HistoryState.Error("無法新增至歷史紀錄。")
             }
         }
     }
 
-    /**
-     * Saves the selected foods to history.
-     */
     fun saveSelectedFoods(
         selectedFoods: List<MenuItem>,
         restaurantName: String,
@@ -56,7 +53,7 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
             )
             if (result) {
                 _historyState.value = HistoryState.Success
-                // Refresh the history after saving
+                // 保存後刷新歷史紀錄
                 getHistory()
             } else {
                 _historyState.value = HistoryState.Error("無法保存歷史紀錄。")
@@ -64,9 +61,6 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
         }
     }
 
-    /**
-     * Retrieves the user's history.
-     */
     fun getHistory() {
         _historyState.value = HistoryState.Loading
         viewModelScope.launch {
@@ -80,20 +74,42 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
         }
     }
 
-    /**
-     * Resets the history state to Idle.
-     */
+    fun deleteHistoryItem(itemId: String) {
+        _historyState.value = HistoryState.Loading
+        viewModelScope.launch {
+            val result = historyRepository.deleteHistoryItem(itemId)
+            if (result) {
+                _historyState.value = HistoryState.Success
+                // 刪除後刷新歷史紀錄
+                getHistory()
+            } else {
+                _historyState.value = HistoryState.Error("無法刪除歷史紀錄。")
+            }
+        }
+    }
+
+    fun updateHistoryItem(itemId: String, updatedItem: HistoryItem) {
+        _historyState.value = HistoryState.Loading
+        viewModelScope.launch {
+            val result = historyRepository.updateHistoryItem(itemId, updatedItem)
+            if (result) {
+                _historyState.value = HistoryState.Success
+                // 更新後刷新歷史紀錄
+                getHistory()
+            } else {
+                _historyState.value = HistoryState.Error("無法更新歷史紀錄。")
+            }
+        }
+    }
+
     fun resetHistoryState() {
         _historyState.value = HistoryState.Idle
     }
 
-    /**
-     * Represents the history state.
-     */
     sealed class HistoryState {
-        object Idle : HistoryState()
-        object Loading : HistoryState()
-        object Success : HistoryState()
+        data object Idle : HistoryState()
+        data object Loading : HistoryState()
+        data object Success : HistoryState()
         data class Error(val message: String) : HistoryState()
     }
 }

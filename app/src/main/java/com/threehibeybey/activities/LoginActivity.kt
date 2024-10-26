@@ -25,9 +25,6 @@ import com.threehibeybey.ui.theme.MyApplicationTheme
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
 
-/**
- * Activity responsible for handling user login.
- */
 class LoginActivity : ComponentActivity() {
 
     private lateinit var authViewModel: AuthViewModel
@@ -40,6 +37,14 @@ class LoginActivity : ComponentActivity() {
 
         val authRepository = AuthRepository(FirebaseAuth.getInstance())
         authViewModel = AuthViewModel(authRepository)
+
+        // 檢查是否已經登入
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+            finish()
+            return
+        }
 
         setContent {
             MyApplicationTheme {
@@ -60,6 +65,7 @@ class LoginActivity : ComponentActivity() {
                             is AuthState.Error -> {
                                 isLoading = false
                                 Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
+                                authViewModel.resetAuthState()
                             }
                             else -> {
                                 isLoading = false

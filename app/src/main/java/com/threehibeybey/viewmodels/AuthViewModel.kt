@@ -9,23 +9,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-/**
- * Represents the authentication state.
- */
 sealed class AuthState {
-    data object Idle : AuthState()
-    data object Loading : AuthState()
-    data object LoginSuccess : AuthState()
-    data object RegisterSuccess : AuthState()
-    data object UpdateEmailSuccess : AuthState()
-    data object UpdatePasswordSuccess : AuthState()
-    data object DeleteAccountSuccess : AuthState()
+    object Idle : AuthState()
+    object Loading : AuthState()
+    object LoginSuccess : AuthState()
+    object RegisterSuccess : AuthState()
+    object UpdateEmailSuccess : AuthState()
+    object UpdatePasswordSuccess : AuthState()
+    object DeleteAccountSuccess : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
-/**
- * ViewModel for handling authentication-related operations.
- */
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _user: MutableStateFlow<FirebaseUser?> = MutableStateFlow(null)
@@ -35,7 +29,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val authState: StateFlow<AuthState> = _authState
 
     init {
-        // Check if there is a logged-in user
+        // 檢查當前使用者是否已登入
         val currentUser = authRepository.getCurrentUser()
         if (currentUser != null) {
             _user.value = currentUser
@@ -43,17 +37,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Attempts to log in the user with the provided email and password.
-     */
     fun login(email: String, password: String) {
         if (!ValidationUtils.isValidEmail(email)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
-            return
-        }
-
-        if (!ValidationUtils.isPasswordStrong(password)) {
-            _authState.value = AuthState.Error("密碼強度不足。")
             return
         }
 
@@ -73,17 +59,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Attempts to register a new user with the provided email and password.
-     */
     fun register(email: String, password: String) {
         if (!ValidationUtils.isValidEmail(email)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
-            return
-        }
-
-        if (!ValidationUtils.isPasswordStrong(password)) {
-            _authState.value = AuthState.Error("密碼強度不足。")
             return
         }
 
@@ -103,21 +81,12 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Logs out the current user.
-     */
     fun logout() {
         authRepository.logout()
         _user.value = null
         _authState.value = AuthState.Idle
     }
 
-    /**
-     * Updates the user's email after re-authentication.
-     *
-     * @param newEmail The new email to set.
-     * @param currentPassword The current password for re-authentication.
-     */
     fun updateEmail(newEmail: String, currentPassword: String) {
         if (!ValidationUtils.isValidEmail(newEmail)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
@@ -139,12 +108,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Updates the user's password after re-authentication.
-     */
     fun updatePassword(newPassword: String, currentPassword: String) {
         if (!ValidationUtils.isPasswordStrong(newPassword)) {
-            _authState.value = AuthState.Error("新密碼強度不足。")
+            _authState.value = AuthState.Error("新密碼強度不足，請包含至少8個字元，且包含數字與大寫字母。")
             return
         }
 
@@ -163,9 +129,6 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Deletes the user's account after re-authentication.
-     */
     fun deleteAccount(password: String) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
@@ -181,5 +144,10 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 }
             }
         }
+    }
+
+    // 新增此方法以重置 AuthState
+    fun resetAuthState() {
+        _authState.value = AuthState.Idle
     }
 }
