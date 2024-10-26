@@ -16,6 +16,8 @@ sealed class AuthState {
     object RegisterSuccess : AuthState()
     object EmailVerificationSent : AuthState()
     object PasswordResetEmailSent : AuthState()
+    object EmailChangeEmailSent : AuthState()
+    object DeleteAccountEmailSent : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -94,6 +96,40 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.PasswordResetEmailSent -> {
                         _authState.value = AuthState.PasswordResetEmailSent
+                    }
+                    is AuthRepository.AuthResult.Error -> {
+                        _authState.value = AuthState.Error(result.message)
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun sendEmailChangeRequest() {
+        _authState.value = AuthState.Loading
+        viewModelScope.launch {
+            authRepository.sendEmailChangeEmail().collect { result ->
+                when (result) {
+                    is AuthRepository.AuthResult.EmailChangeEmailSent -> {
+                        _authState.value = AuthState.EmailChangeEmailSent
+                    }
+                    is AuthRepository.AuthResult.Error -> {
+                        _authState.value = AuthState.Error(result.message)
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun sendDeleteAccountEmail(password: String) {
+        _authState.value = AuthState.Loading
+        viewModelScope.launch {
+            authRepository.sendDeleteAccountEmail(password).collect { result ->
+                when (result) {
+                    is AuthRepository.AuthResult.DeleteAccountEmailSent -> {
+                        _authState.value = AuthState.DeleteAccountEmailSent
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
