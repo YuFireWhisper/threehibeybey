@@ -42,15 +42,17 @@ import com.threehibeybey.viewmodels.RestaurantViewModel
 @Composable
 fun CategoryScreen(
     navController: NavController,
+    canteenName: String,
     restaurantName: String,
     restaurantViewModel: RestaurantViewModel,
     selectedFoods: List<MenuItem>,
     setSelectedFoods: (List<MenuItem>) -> Unit
 ) {
-    val restaurants by restaurantViewModel.restaurants.collectAsState()
+    val schoolCanteens by restaurantViewModel.schoolCanteens.collectAsState()
 
     // Find the corresponding restaurant
-    val restaurant = restaurants.find { it.name == restaurantName }
+    val canteen = schoolCanteens.find { it.name == canteenName }
+    val restaurant = canteen?.items?.find { it.name == restaurantName }
 
     // Extract all categories from the restaurant
     val categories: List<Category> = restaurant?.items ?: emptyList()
@@ -99,7 +101,7 @@ fun CategoryScreen(
                     ) {
                         items(categories) { category ->
                             CategoryCard(category) {
-                                navController.navigate("food/${restaurantName}/${category.name}")
+                                navController.navigate("food/${canteenName}/${restaurantName}/${category.name}")
                             }
                         }
                     }
@@ -147,4 +149,3 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
         }
     }
 }
-

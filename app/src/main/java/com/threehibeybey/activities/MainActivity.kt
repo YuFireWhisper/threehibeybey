@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
         authViewModel = AuthViewModel(authRepository)
 
         // Load data before setting content
-        restaurantViewModel.loadRestaurants(JsonLoader(), this)
+        restaurantViewModel.loadSchoolCanteens(JsonLoader(), this)
 
         setContent {
             MyApplicationTheme {

@@ -32,10 +32,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.threehibeybey.models.Restaurant
+import com.threehibeybey.models.SchoolCanteen
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
- * Composable function for displaying the list of restaurants.
+ * Composable function for displaying the list of school canteens.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,13 +44,13 @@ fun RestaurantScreen(
     navController: NavController,
     restaurantViewModel: RestaurantViewModel
 ) {
-    val restaurants by restaurantViewModel.restaurants.collectAsState()
+    val schoolCanteens by restaurantViewModel.schoolCanteens.collectAsState()
     val error by restaurantViewModel.error.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("餐廳") },
+                title = { Text("學餐") },
                 colors = TopAppBarDefaults.topAppBarColors()
             )
         },
@@ -68,7 +69,7 @@ fun RestaurantScreen(
                     )
                 }
             } else {
-                if (restaurants.isEmpty()) {
+                if (schoolCanteens.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -87,13 +88,9 @@ fun RestaurantScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(restaurants) { restaurant ->
-                                RestaurantCard(restaurant) {
-                                    if (restaurant.name == "全家便利商店") {
-                                        navController.navigate("familyMartInput")
-                                    } else {
-                                        navController.navigate("restaurant/${restaurant.name}")
-                                    }
+                            items(schoolCanteens) { canteen ->
+                                SchoolCanteenCard(canteen) {
+                                    navController.navigate("canteen/${canteen.name}")
                                 }
                             }
                         }
@@ -102,6 +99,35 @@ fun RestaurantScreen(
             }
         }
     )
+}
+
+/**
+ * Card composable for each school canteen.
+ */
+@Composable
+fun SchoolCanteenCard(canteen: SchoolCanteen, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = canteen.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
 }
 
 /**

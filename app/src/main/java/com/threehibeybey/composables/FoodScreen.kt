@@ -45,6 +45,7 @@ import com.threehibeybey.viewmodels.RestaurantViewModel
 @Composable
 fun FoodScreen(
     navController: NavController,
+    canteenName: String,
     restaurantName: String,
     categoryName: String,
     restaurantViewModel: RestaurantViewModel,
@@ -52,13 +53,21 @@ fun FoodScreen(
     setSelectedFoods: (List<MenuItem>) -> Unit,
     personalViewModel: PersonalViewModel
 ) {
-    val restaurants by restaurantViewModel.restaurants.collectAsState()
+    // 替換 restaurants 為 schoolCanteens
+    val schoolCanteens by restaurantViewModel.schoolCanteens.collectAsState()
     val context = LocalContext.current
     val historyState by personalViewModel.historyState.collectAsState()
 
-    // Find the corresponding restaurant and category
-    val restaurant = restaurants.find { it.name == restaurantName }
+    // 根據 canteenName 找到對應的學餐
+    val canteen = schoolCanteens.find { it.name == canteenName }
+
+    // 在該學餐中找到指定的餐廳
+    val restaurant = canteen?.items?.find { it.name == restaurantName }
+
+    // 在餐廳中找到指定的分類
     val category = restaurant?.items?.find { it.name == categoryName }
+
+    // 提取菜單項目
     val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
 
     // Show Toast when history is saved

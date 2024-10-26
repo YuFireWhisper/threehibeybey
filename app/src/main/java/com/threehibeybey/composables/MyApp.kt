@@ -58,16 +58,19 @@ fun MyApp(
                 )
             }
             composable(
-                route = "food/{restaurantName}/{categoryName}",
+                route = "food/{canteenName}/{restaurantName}/{categoryName}",
                 arguments = listOf(
+                    navArgument("canteenName") { type = NavType.StringType },
                     navArgument("restaurantName") { type = NavType.StringType },
                     navArgument("categoryName") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
+                val canteenName = backStackEntry.arguments?.getString("canteenName") ?: ""
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
                 val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
                 FoodScreen(
                     navController = navController,
+                    canteenName = canteenName,
                     restaurantName = restaurantName,
                     categoryName = categoryName,
                     restaurantViewModel = restaurantViewModel,
@@ -77,18 +80,34 @@ fun MyApp(
                 )
             }
             composable(
-                route = "restaurant/{restaurantName}",
+                route = "restaurant/{canteenName}/{restaurantName}",
                 arguments = listOf(
+                    navArgument("canteenName") { type = NavType.StringType },
                     navArgument("restaurantName") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
+                val canteenName = backStackEntry.arguments?.getString("canteenName") ?: ""
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
                 CategoryScreen(
                     navController = navController,
+                    canteenName = canteenName,
                     restaurantName = restaurantName,
                     restaurantViewModel = restaurantViewModel,
                     selectedFoods = selectedFoods,
                     setSelectedFoods = { selectedFoods = it }
+                )
+            }
+            composable(
+                route = "canteen/{canteenName}",
+                arguments = listOf(
+                    navArgument("canteenName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val canteenName = backStackEntry.arguments?.getString("canteenName") ?: ""
+                CanteenScreen(
+                    navController = navController,
+                    canteenName = canteenName,
+                    restaurantViewModel = restaurantViewModel
                 )
             }
             composable("familyMartInput") {
@@ -106,4 +125,3 @@ fun MyApp(
         }
     }
 }
-
