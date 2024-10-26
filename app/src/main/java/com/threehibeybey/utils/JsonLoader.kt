@@ -8,18 +8,15 @@ import com.threehibeybey.models.SchoolCanteen
 import java.io.IOException
 
 /**
- * Utility class for loading and parsing JSON data from assets.
+ * @deprecated Data is now loaded from Firebase Firestore instead of local JSON files.
+ * This class is kept for reference only.
  */
-@Deprecated("Preferences are now loaded from Firebase. This class is kept for legacy purposes.")
+@Deprecated("Data is now loaded from Firebase Firestore. Use PreferencesRepository instead.")
 class JsonLoader {
-
-    /**
-     * Loads and parses a JSON file into a list of SchoolCanteen objects.
-     *
-     * @param context The application context.
-     * @param fileName The name of the JSON file in the assets directory.
-     * @return A list of SchoolCanteen objects, or an empty list if an error occurs.
-     */
+    @Deprecated("Use PreferencesRepository.getRestaurants() instead",
+        ReplaceWith("PreferencesRepository(FirebaseFirestore.getInstance()).getRestaurants()",
+            "com.threehibeybey.repositories.PreferencesRepository",
+            "com.google.firebase.firestore.FirebaseFirestore"))
     fun loadJson(context: Context, fileName: String): List<SchoolCanteen> {
         return try {
             context.assets.open(fileName).use { inputStream ->

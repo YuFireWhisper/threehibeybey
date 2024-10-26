@@ -13,7 +13,6 @@ import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.repositories.HistoryRepository
 import com.threehibeybey.repositories.RestaurantRepository
 import com.threehibeybey.ui.theme.MyApplicationTheme
-import com.threehibeybey.utils.JsonLoader
 import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.PreferenceViewModel
@@ -58,10 +57,10 @@ class MainActivity : ComponentActivity() {
         personalViewModel = PersonalViewModel(historyRepository)
         restaurantViewModel = RestaurantViewModel(restaurantRepository)
         authViewModel = AuthViewModel(authRepository)
-        preferenceViewModel = PreferenceViewModel() // Already initialized
+        preferenceViewModel = PreferenceViewModel()
 
-        // Load data before setting content
-        restaurantViewModel.loadSchoolCanteens(JsonLoader(), this)
+        // Load restaurant data
+        restaurantViewModel.loadSchoolCanteens()
 
         setContent {
             MyApplicationTheme {
@@ -69,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     restaurantViewModel = restaurantViewModel,
                     personalViewModel = personalViewModel,
                     authViewModel = authViewModel,
-                    preferenceViewModel = preferenceViewModel, // Passing preferenceViewModel
+                    preferenceViewModel = preferenceViewModel,
                     onLogout = {
                         // Navigate to LoginActivity when user logs out
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
