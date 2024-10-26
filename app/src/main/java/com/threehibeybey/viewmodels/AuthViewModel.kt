@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the state of authentication operations.
+ */
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
@@ -21,6 +24,11 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
+/**
+ * ViewModel handling authentication-related operations.
+ *
+ * @param authRepository The repository for authentication operations.
+ */
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _user: MutableStateFlow<FirebaseUser?> = MutableStateFlow(null)
@@ -30,7 +38,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val authState: StateFlow<AuthState> = _authState
 
     init {
-        // 檢查當前使用者是否已登入
+        // Check if the current user is logged in
         val currentUser = authRepository.getCurrentUser()
         if (currentUser != null) {
             _user.value = currentUser
@@ -38,6 +46,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Attempts to log in the user with the provided email and password.
+     */
     fun login(email: String, password: String) {
         if (!ValidationUtils.isValidEmail(email)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
@@ -61,9 +72,16 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Attempts to register a new user with the provided email and password.
+     */
     fun register(email: String, password: String) {
         if (!ValidationUtils.isValidEmail(email)) {
             _authState.value = AuthState.Error("無效的電子郵件格式。")
+            return
+        }
+        if (!ValidationUtils.isPasswordStrong(password)) {
+            _authState.value = AuthState.Error("密碼必須至少 8 個字元，包含一個大寫字母和一個數字。")
             return
         }
 
@@ -83,12 +101,18 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Logs out the current user.
+     */
     fun logout() {
         authRepository.logout()
         _user.value = null
         _authState.value = AuthState.Idle
     }
 
+    /**
+     * Sends a password reset email to the user.
+     */
     fun sendPasswordResetEmail(email: String) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
@@ -106,6 +130,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Sends an email change request to the user.
+     */
     fun sendEmailChangeRequest() {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
@@ -123,6 +150,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Sends a delete account email to the user after verifying the password.
+     */
     fun sendDeleteAccountEmail(password: String) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
@@ -140,7 +170,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    // 新增此方法以重置 AuthState
+    /**
+     * Resets the authentication state to Idle.
+     */
     fun resetAuthState() {
         _authState.value = AuthState.Idle
     }

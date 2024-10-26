@@ -19,7 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 /**
@@ -33,16 +36,18 @@ fun RegisterPage(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var confirmPasswordError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                modifier = Modifier.semantics { contentDescription = "載入中" }
+            )
         } else {
             Column(
                 modifier = Modifier
@@ -62,23 +67,25 @@ fun RegisterPage(
                     onValueChange = {
                         email = it
                         emailError = if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                            ""
+                            null
                         } else {
                             "無效的電子郵件格式"
                         }
                     },
                     label = { Text("電子郵件") },
+                    placeholder = { Text("輸入您的電子郵件") },
                     singleLine = true,
+                    isError = emailError != null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    isError = emailError.isNotEmpty()
+                        .padding(bottom = 8.dp)
                 )
-                if (emailError.isNotEmpty()) {
+                if (emailError != null) {
                     Text(
-                        text = emailError,
+                        text = emailError ?: "",
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.align(Alignment.Start)
                     )
                 }
@@ -88,23 +95,26 @@ fun RegisterPage(
                     onValueChange = {
                         password = it
                         passwordError = if (password.length >= 8) {
-                            ""
+                            null
                         } else {
-                            "密碼長度至少為8位"
+                            "密碼長度至少為 8 個字元"
                         }
                     },
                     label = { Text("密碼") },
+                    placeholder = { Text("輸入您的密碼") },
                     singleLine = true,
+                    isError = passwordError != null,
+                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    isError = passwordError.isNotEmpty()
+                        .padding(bottom = 8.dp)
                 )
-                if (passwordError.isNotEmpty()) {
+                if (passwordError != null) {
                     Text(
-                        text = passwordError,
+                        text = passwordError ?: "",
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.align(Alignment.Start)
                     )
                 }
@@ -114,34 +124,39 @@ fun RegisterPage(
                     onValueChange = {
                         confirmPassword = it
                         confirmPasswordError = if (confirmPassword == password) {
-                            ""
+                            null
                         } else {
-                            "密碼不匹配"
+                            "密碼不一致"
                         }
                     },
                     label = { Text("確認密碼") },
+                    placeholder = { Text("再次輸入您的密碼") },
                     singleLine = true,
+                    isError = confirmPasswordError != null,
+                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    isError = confirmPasswordError.isNotEmpty()
+                        .padding(bottom = 8.dp)
                 )
-                if (confirmPasswordError.isNotEmpty()) {
+                if (confirmPasswordError != null) {
                     Text(
-                        text = confirmPasswordError,
+                        text = confirmPasswordError ?: "",
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.align(Alignment.Start)
                     )
                 }
 
                 Button(
                     onClick = {
-                        if (emailError.isEmpty() && passwordError.isEmpty() && confirmPasswordError.isEmpty()) {
+                        if (emailError == null && passwordError == null && confirmPasswordError == null) {
                             onRegisterClick(email, password, confirmPassword)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
                 ) {
                     Text("註冊")
                 }
@@ -149,3 +164,4 @@ fun RegisterPage(
         }
     }
 }
+

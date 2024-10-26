@@ -9,6 +9,9 @@ object ValidationUtils {
 
     /**
      * Validates if the provided email has a correct format.
+     *
+     * @param email The email address to validate.
+     * @return True if the email format is valid, false otherwise.
      */
     fun isValidEmail(email: String): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -16,8 +19,13 @@ object ValidationUtils {
 
     /**
      * Checks if the password meets the strength criteria.
+     *
+     * @param password The password to validate.
+     * @return True if the password is strong, false otherwise.
      */
     fun isPasswordStrong(password: String): Boolean {
-        return password.length >= 8 && password.any { it.isDigit() } && password.any { it.isUpperCase() }
+        // Password must be at least 8 characters, contain at least one digit and one uppercase letter
+        val passwordRegex = Regex("^(?=.*[A-Z])(?=.*\\d).{8,}\$")
+        return passwordRegex.matches(password)
     }
 }

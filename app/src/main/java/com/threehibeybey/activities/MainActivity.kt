@@ -34,8 +34,8 @@ class MainActivity : ComponentActivity() {
 
         // Check if user is logged in
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser == null) {
-            // Not logged in, navigate to LoginActivity
+        if (currentUser == null || !currentUser.isEmailVerified) {
+            // Not logged in or email not verified, navigate to LoginActivity
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return

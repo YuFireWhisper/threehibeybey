@@ -61,18 +61,18 @@ fun FoodScreen(
     val category = restaurant?.items?.find { it.name == categoryName }
     val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
 
-    // Show Toast only when selectedFoods is not empty
+    // Show Toast when history is saved
     LaunchedEffect(historyState) {
         if (historyState is PersonalViewModel.HistoryState.Success && selectedFoods.isNotEmpty()) {
             Toast.makeText(context, "已保存至歷史紀錄", Toast.LENGTH_SHORT).show()
-            personalViewModel.resetHistoryState() // Reset history state after showing the Toast
+            personalViewModel.resetHistoryState()
         } else if (historyState is PersonalViewModel.HistoryState.Error) {
             Toast.makeText(
                 context,
                 (historyState as PersonalViewModel.HistoryState.Error).message,
                 Toast.LENGTH_SHORT
             ).show()
-            personalViewModel.resetHistoryState() // Reset history state after error
+            personalViewModel.resetHistoryState()
         }
     }
 
@@ -82,17 +82,28 @@ fun FoodScreen(
                 title = { Text(categoryName) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.surfaceTint
+                        )
                     }
                 }
             )
         },
         content = { innerPadding ->
             if (foods.isEmpty()) {
-                Text(
-                    text = "找不到餐廳 $restaurantName 中分類 $categoryName 的品項",
-                    modifier = Modifier.padding(innerPadding)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "找不到餐廳 $restaurantName 中分類 $categoryName 的品項",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             } else {
                 Column(
                     modifier = Modifier
@@ -150,9 +161,9 @@ fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp),
         colors = if (isSelected) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         } else {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            CardDefaults.cardColors()
         }
     ) {
         Box(
@@ -164,17 +175,17 @@ fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = food.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "價格: ${food.price} 元",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "價格：${food.price} 元",
+                    style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "熱量: ${food.calories} 大卡",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "熱量：${food.calories} 大卡",
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }

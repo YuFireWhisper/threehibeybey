@@ -3,19 +3,18 @@ package com.threehibeybey.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -40,86 +42,93 @@ fun LoginPage(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                modifier = Modifier.semantics { contentDescription = "載入中" }
+            )
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextField(
+                Text(
+                    text = "登入",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+                OutlinedTextField(
                     value = email,
                     onValueChange = {
                         email = it
-                        emailError = if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                            ""
-                        } else {
-                            "無效的電子郵件格式"
-                        }
+                        emailError = null
                     },
-                    label = { Text("Email") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    isError = emailError.isNotEmpty(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                    label = { Text("電子郵件") },
+                    placeholder = { Text("輸入電子郵件") },
+                    singleLine = true,
+                    isError = emailError != null,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 )
-                if (emailError.isNotEmpty()) {
+                if (emailError != null) {
                     Text(
-                        text = emailError,
+                        text = emailError ?: "",
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.align(Alignment.Start)
                     )
                 }
 
-                TextField(
+                OutlinedTextField(
                     value = password,
                     onValueChange = {
                         password = it
-                        passwordError = if (password.length >= 8) {
-                            ""
-                        } else {
-                            "密碼長度至少為8位"
-                        }
+                        passwordError = null
                     },
-                    label = { Text("Password") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
+                    label = { Text("密碼") },
+                    placeholder = { Text("輸入密碼") },
+                    singleLine = true,
+                    isError = passwordError != null,
                     visualTransformation = PasswordVisualTransformation(),
-                    isError = passwordError.isNotEmpty(),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            if (emailError.isEmpty() && passwordError.isEmpty()) {
+                            if (email.isNotBlank() && password.isNotBlank()) {
                                 onLoginClick(email, password)
+                            } else {
+                                if (email.isBlank()) emailError = "請輸入電子郵件"
+                                if (password.isBlank()) passwordError = "請輸入密碼"
                             }
                         }
-                    )
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 )
-                if (passwordError.isNotEmpty()) {
+                if (passwordError != null) {
                     Text(
-                        text = passwordError,
+                        text = passwordError ?: "",
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.align(Alignment.Start)
                     )
                 }
 
                 TextButton(
                     onClick = {
-                        if (email.isNotEmpty()) {
+                        if (email.isNotBlank()) {
                             onForgotPasswordClick(email)
                         } else {
                             emailError = "請先輸入您的電子郵件"
@@ -135,19 +144,25 @@ fun LoginPage(
 
                 Button(
                     onClick = {
-                        if (emailError.isEmpty() && passwordError.isEmpty()) {
+                        if (email.isNotBlank() && password.isNotBlank()) {
                             onLoginClick(email, password)
+                        } else {
+                            if (email.isBlank()) emailError = "請輸入電子郵件"
+                            if (password.isBlank()) passwordError = "請輸入密碼"
                         }
                     },
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("登入")
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onRegisterClick) {
+                OutlinedButton(
+                    onClick = onRegisterClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("註冊")
                 }
             }
         }
     }
 }
+

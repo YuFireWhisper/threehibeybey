@@ -1,5 +1,6 @@
 package com.threehibeybey.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -21,6 +23,7 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
@@ -35,6 +38,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.threehibeybey.models.HistoryItem
@@ -53,8 +60,9 @@ fun HistoryScreen(
     val historyState by personalViewModel.historyState.collectAsState()
 
     var selectedItemForEdit by remember { mutableStateOf<HistoryItem?>(null) }
+    val context = LocalContext.current
 
-    // 當畫面首次顯示時載入歷史紀錄
+    // Load history when the screen is displayed
     LaunchedEffect(Unit) {
         personalViewModel.getHistory()
     }
@@ -72,51 +80,58 @@ fun HistoryScreen(
                             .padding(innerPadding),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.semantics { contentDescription = "載入中" }
+                        )
                     }
                 }
                 is PersonalViewModel.HistoryState.Success -> {
-                    LazyColumn(
-                        contentPadding = innerPadding,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(historyItems, key = { it.id }) { item ->
-                            val dismissState = rememberDismissState(confirmValueChange = { newValue ->
-                                if (newValue == DismissValue.DismissedToStart) {
-                                    personalViewModel.deleteHistoryItem(item.id)
-                                    true
-                                } else {
-                                    false
-                                }
-                            })
-                            SwipeToDismiss(
-                                state = dismissState,
-                                background = {
-                                    // 背景內容（例如刪除圖示）
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(16.dp),
-                                        contentAlignment = Alignment.CenterEnd
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            tint = MaterialTheme.colorScheme.error
+                    if (historyItems.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "目前沒有歷史紀錄",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = innerPadding,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(historyItems, key = { it.id }) { item ->
+                                val dismissState = rememberDismissState(confirmValueChange = { newValue ->
+                                    if (newValue == DismissValue.DismissedToEnd) {
+                                        personalViewModel.deleteHistoryItem(item.id)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                })
+                                SwipeToDismiss(
+                                    state = dismissState,
+                                    background = {
+                                        // Background content (e.g., delete icon)
+                                        val alignment = Alignment.CenterStart
+                                        val iconModifier = Modifier.padding(start = 16.dp)
+                                        DeleteBackground(alignment, iconModifier)
+                                    },
+                                    directions = setOf(DismissDirection.StartToEnd),
+                                    dismissContent = {
+                                        HistoryCard(
+                                            historyItem = item,
+                                            onClick = {
+                                                // Show detail dialog
+                                                personalViewModel.selectHistoryItem(item)
+                                            }
                                         )
                                     }
-                                },
-                                directions = setOf(DismissDirection.EndToStart),
-                                dismissContent = {
-                                    HistoryCard(
-                                        historyItem = item,
-                                        onClick = {
-                                            // 顯示詳細資訊對話框
-                                            personalViewModel.selectHistoryItem(item)
-                                        }
-                                    )
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -124,15 +139,16 @@ fun HistoryScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(innerPadding),
+                            .padding(innerPadding)
+                            .background(MaterialTheme.colorScheme.errorContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = (historyState as PersonalViewModel.HistoryState.Error).message,
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
-                    // 重置狀態以防止重複的錯誤訊息
+                    // Reset state to prevent duplicate error messages
                     LaunchedEffect(Unit) {
                         personalViewModel.resetHistoryState()
                     }
@@ -142,7 +158,7 @@ fun HistoryScreen(
         }
     )
 
-    // 如果有選擇的項目，顯示詳細資訊對話框
+    // Show detail dialog if an item is selected
     val selectedHistoryItem by personalViewModel.selectedHistoryItem.collectAsState()
     if (selectedHistoryItem != null) {
         HistoryDetailDialog(
@@ -155,7 +171,7 @@ fun HistoryScreen(
         )
     }
 
-    // 如果有要編輯的項目，顯示編輯對話框
+    // Show edit dialog if an item is selected for editing
     if (selectedItemForEdit != null) {
         EditHistoryDialog(
             historyItem = selectedItemForEdit!!,
@@ -178,19 +194,37 @@ fun HistoryCard(
             .fillMaxWidth()
             .padding(8.dp)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("餐廳：${historyItem.restaurantName}", style = MaterialTheme.typography.bodyLarge)
-            Text("時間：${formatTimestamp(historyItem.timestamp)}", style = MaterialTheme.typography.bodyMedium)
-            Text("總金額：${historyItem.totalPrice} 元", style = MaterialTheme.typography.bodyMedium)
-            Text("總熱量：${historyItem.totalCalories} 大卡", style = MaterialTheme.typography.bodyMedium)
+            Text("餐廳：${historyItem.restaurantName}", style = MaterialTheme.typography.titleMedium)
+            Text("時間：${formatTimestamp(historyItem.timestamp)}", style = MaterialTheme.typography.bodySmall)
+            Text("總金額：${historyItem.totalPrice} 元", style = MaterialTheme.typography.bodySmall)
+            Text("總熱量：${historyItem.totalCalories} 大卡", style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("品項：", style = MaterialTheme.typography.bodyMedium)
+            Text("品項：", style = MaterialTheme.typography.bodySmall)
             historyItem.items.forEach { item ->
                 Text("- ${item.name}", style = MaterialTheme.typography.bodySmall)
             }
         }
+    }
+}
+
+@Composable
+fun DeleteBackground(alignment: Alignment, modifier: Modifier) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.error),
+        contentAlignment = alignment
+    ) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = "刪除",
+            tint = MaterialTheme.colorScheme.onError,
+            modifier = modifier
+        )
     }
 }
 
@@ -236,43 +270,49 @@ fun EditHistoryDialog(
     onDismiss: () -> Unit
 ) {
     var restaurantName by remember { mutableStateOf(historyItem.restaurantName) }
-    var items by remember { mutableStateOf(historyItem.items.toMutableList()) }
     var totalPrice by remember { mutableStateOf(historyItem.totalPrice.toString()) }
     var totalCalories by remember { mutableStateOf(historyItem.totalCalories.toString()) }
+    var items by remember { mutableStateOf(historyItem.items.toMutableList()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("編輯歷史紀錄") },
         text = {
             Column {
-                // 餐廳名稱
-                TextFieldWithLabel(
-                    label = "餐廳名稱",
+                OutlinedTextField(
                     value = restaurantName,
-                    onValueChange = { restaurantName = it }
+                    onValueChange = { restaurantName = it },
+                    label = { Text("餐廳名稱") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                // 總金額
-                TextFieldWithLabel(
-                    label = "總金額",
+                OutlinedTextField(
                     value = totalPrice,
-                    onValueChange = { totalPrice = it }
+                    onValueChange = { totalPrice = it },
+                    label = { Text("總金額") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
                 )
-                // 總熱量
-                TextFieldWithLabel(
-                    label = "總熱量",
+                OutlinedTextField(
                     value = totalCalories,
-                    onValueChange = { totalCalories = it }
+                    onValueChange = { totalCalories = it },
+                    label = { Text("總熱量") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
                 )
-                // 品項（簡化示例）
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("品項：")
+                Text("品項：", style = MaterialTheme.typography.bodyMedium)
                 items.forEachIndexed { index, menuItem ->
-                    TextFieldWithLabel(
-                        label = "品項 ${index + 1}",
+                    OutlinedTextField(
                         value = menuItem.name,
                         onValueChange = { newName ->
                             items[index] = menuItem.copy(name = newName)
-                        }
+                        },
+                        label = { Text("品項 ${index + 1}") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -296,22 +336,6 @@ fun EditHistoryDialog(
             }
         }
     )
-}
-
-@Composable
-fun TextFieldWithLabel(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit
-) {
-    Column {
-        Text(text = label)
-        androidx.compose.material3.OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
 }
 
 fun formatTimestamp(timestamp: Long): String {

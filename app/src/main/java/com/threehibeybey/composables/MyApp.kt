@@ -41,9 +41,7 @@ fun MyApp(
             composable("restaurant") {
                 RestaurantScreen(
                     navController = navController,
-                    restaurantViewModel = restaurantViewModel,
-                    selectedFoods = selectedFoods,
-                    setSelectedFoods = { selectedFoods = it }
+                    restaurantViewModel = restaurantViewModel
                 )
             }
             composable("calorieCalculator") {
@@ -93,9 +91,7 @@ fun MyApp(
                     setSelectedFoods = { selectedFoods = it }
                 )
             }
-            composable(
-                route = "familyMartInput"
-            ) {
+            composable("familyMartInput") {
                 FamilyMartInputScreen(
                     navController = navController,
                     restaurantViewModel = restaurantViewModel
@@ -110,3 +106,4 @@ fun MyApp(
         }
     }
 }
+

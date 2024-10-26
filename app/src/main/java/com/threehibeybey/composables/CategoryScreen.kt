@@ -61,17 +61,28 @@ fun CategoryScreen(
                 title = { Text(restaurantName) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.surfaceTint
+                        )
                     }
                 }
             )
         },
         content = { innerPadding ->
             if (categories.isEmpty()) {
-                Text(
-                    text = "找不到餐廳 $restaurantName 的分類",
-                    modifier = Modifier.padding(innerPadding)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "找不到餐廳 $restaurantName 的分類",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             } else {
                 // Use Column to arrange content and FloatingSummaryCard
                 Column(
@@ -84,7 +95,7 @@ fun CategoryScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.weight(1f) // Take available space
+                        modifier = Modifier.weight(1f)
                     ) {
                         items(categories) { category ->
                             CategoryCard(category) {
@@ -118,7 +129,8 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors()
     ) {
         Box(
             modifier = Modifier
@@ -128,10 +140,11 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
         ) {
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
     }
 }
+

@@ -1,7 +1,7 @@
 package com.threehibeybey.composables
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -26,7 +26,7 @@ data class BottomNavItem(val route: String, val title: String, val icon: ImageVe
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("restaurant", "餐廳", Icons.Filled.Home),
-        BottomNavItem("calorieCalculator", "熱量計算機", Icons.Filled.FitnessCenter),
+        BottomNavItem("calorieCalculator", "熱量計算機", Icons.Filled.Calculate),
         BottomNavItem("personal", "個人", Icons.Filled.Person)
     )
 
@@ -40,7 +40,7 @@ fun BottomNavigationBar(navController: NavController) {
                 label = { Text(text = item.title) },
                 selected = currentRoute == item.route || currentRoute?.startsWith(item.route) == true,
                 onClick = {
-                    if (currentRoute != item.route) { // 避免重複導航
+                    if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) {
                                 saveState = true
