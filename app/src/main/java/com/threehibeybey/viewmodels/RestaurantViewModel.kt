@@ -82,7 +82,7 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
                         if (it.name == "自定義品項") updatedCategory else it
                     }
                 } else {
-                    // Add new category
+                    // Add new category and subcategory
                     restaurant.items + Category(
                         name = "自定義品項",
                         items = listOf(

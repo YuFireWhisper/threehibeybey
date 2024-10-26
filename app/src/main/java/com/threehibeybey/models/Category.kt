@@ -1,7 +1,7 @@
 package com.threehibeybey.models
 
 /**
- * 資料類別表示分類，包含多個子分類。
+ * Data class representing a category, containing multiple subcategories.
  */
 data class Category(
     val name: String = "",

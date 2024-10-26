@@ -1,7 +1,7 @@
 package com.threehibeybey.models
 
 /**
- * 資料類別表示餐廳，包含多個分類。
+ * Data class representing a restaurant, containing multiple categories.
  */
 data class Restaurant(
     val name: String = "",

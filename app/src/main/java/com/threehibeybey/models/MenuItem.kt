@@ -1,7 +1,7 @@
 package com.threehibeybey.models
 
 /**
- * 資料類別表示菜單項目。
+ * Data class representing a menu item.
  */
 data class MenuItem(
     val name: String = "",

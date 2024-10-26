@@ -1,7 +1,7 @@
 package com.threehibeybey.models
 
 /**
- * 資料類別表示子分類，包含多個菜單項目。
+ * Data class representing a subcategory, containing multiple menu items.
  */
 data class Subcategory(
     val name: String = "",
