@@ -1,5 +1,6 @@
 package com.threehibeybey.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.threehibeybey.models.Category
@@ -13,7 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel 處理與餐廳相關的操作。
+ * ViewModel handling operations related to restaurants.
+ *
+ * @param restaurantRepository The repository for restaurant data.
  */
 class RestaurantViewModel(private val restaurantRepository: RestaurantRepository) : ViewModel() {
 
@@ -24,15 +27,18 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
     val error: StateFlow<String?> = _error
 
     /**
-     * 從 JSON 文件加載餐廳資料，並在成功後添加全家便利商店。
+     * Loads restaurants from a JSON file and adds "全家便利商店".
+     *
+     * @param jsonLoader The utility to load JSON.
+     * @param context The application context.
      */
-    fun loadRestaurants(jsonLoader: JsonLoader, context: android.content.Context) {
+    fun loadRestaurants(jsonLoader: JsonLoader, context: Context) {
         viewModelScope.launch {
             try {
                 val loadedRestaurants = restaurantRepository.loadRestaurants(jsonLoader, context)
                 _restaurants.value = loadedRestaurants
 
-                // 在成功載入後添加全家便利商店
+                // Add FamilyMart after loading
                 addFamilyMart()
             } catch (e: Exception) {
                 _error.value = "無法載入餐廳資料。"
@@ -41,31 +47,52 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
     }
 
     /**
-     * 添加 "全家便利商店" 至餐廳列表中。
+     * Adds "全家便利商店" to the list of restaurants.
      */
     private fun addFamilyMart() {
         val familyMart = Restaurant(
             name = "全家便利商店",
-            items = emptyList() // 初始為空，允許用戶自行添加分類和菜單項目
+            items = mutableListOf()
         )
-        _restaurants.value = _restaurants.value + familyMart
+        _restaurants.value += familyMart
     }
 
     /**
-     * 向 "全家便利商店" 添加新的菜單項目。
+     * Adds a new menu item to "全家便利商店".
+     *
+     * @param menuItem The menu item to add.
      */
     fun addFamilyMartFoodItem(menuItem: MenuItem) {
         val updatedRestaurants = _restaurants.value.map { restaurant ->
             if (restaurant.name == "全家便利商店") {
-                val updatedItems = restaurant.items + Category(
-                    name = "自定義品項",
-                    items = listOf(
-                        Subcategory(
-                            name = "自定義子分類",
-                            items = listOf(menuItem)
+                // Check if "自定義品項" category exists
+                val existingCategory = restaurant.items.find { it.name == "自定義品項" }
+                val updatedItems: List<Category> = if (existingCategory != null) {
+                    // Update existing category
+                    val updatedCategory = existingCategory.copy(
+                        items = existingCategory.items.map { subcategory ->
+                            if (subcategory.name == "自定義子分類") {
+                                subcategory.copy(items = subcategory.items + menuItem)
+                            } else {
+                                subcategory
+                            }
+                        }
+                    )
+                    restaurant.items.map {
+                        if (it.name == "自定義品項") updatedCategory else it
+                    }
+                } else {
+                    // Add new category
+                    restaurant.items + Category(
+                        name = "自定義品項",
+                        items = listOf(
+                            Subcategory(
+                                name = "自定義子分類",
+                                items = listOf(menuItem)
+                            )
                         )
                     )
-                )
+                }
                 restaurant.copy(items = updatedItems)
             } else {
                 restaurant

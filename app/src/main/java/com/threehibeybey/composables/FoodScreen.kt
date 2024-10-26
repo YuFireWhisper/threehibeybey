@@ -1,9 +1,8 @@
-// composables/FoodScreen.kt
 package com.threehibeybey.composables
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,25 +11,36 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.threehibeybey.models.MenuItem
 import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
- * 顯示特定分類內的菜單項目。
+ * Displays menu items for a specific category.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodScreen(
+    navController: NavController,
     restaurantName: String,
     categoryName: String,
     restaurantViewModel: RestaurantViewModel,
@@ -40,53 +50,80 @@ fun FoodScreen(
 ) {
     val restaurants by restaurantViewModel.restaurants.collectAsState()
 
-    // 找到對應的餐廳
+    // Find the corresponding restaurant
     val restaurant = restaurants.find { it.name == restaurantName }
 
-    // 找到對應的分類
+    // Find the corresponding category
     val category = restaurant?.items?.find { it.name == categoryName }
     val subcategories = category?.items ?: emptyList()
 
-    // 從子分類中提取菜單項目
+    // Extract menu items from subcategories
     val foods: List<MenuItem> = subcategories.flatMap { it.items }
 
-    if (foods.isEmpty()) {
-        Log.e("FoodScreen", "No foods found for category: $categoryName in restaurant: $restaurantName")
-    }
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(foods) { food ->
-            FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
-                // 更新選中的食物清單
-                setSelectedFoods(
-                    if (selectedFoods.contains(food)) {
-                        selectedFoods - food // 取消選中
-                    } else {
-                        selectedFoods + food // 選中
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(categoryName) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
+                }
+            )
+        },
+        content = { innerPadding ->
+            if (foods.isEmpty()) {
+                Text(
+                    text = "找不到餐廳 $restaurantName 中分類 $categoryName 的品項",
+                    modifier = Modifier.padding(innerPadding)
                 )
-                // 使用 personalViewModel 添加至歷史紀錄
-                personalViewModel.addToHistory(food)
+            } else {
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(foods) { food ->
+                            FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
+                                // Update selected food list
+                                setSelectedFoods(
+                                    if (selectedFoods.contains(food)) {
+                                        selectedFoods - food // Deselect
+                                    } else {
+                                        selectedFoods + food // Select
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    if (selectedFoods.isNotEmpty()) {
+                        FloatingSummaryCard(
+                            selectedFoods = selectedFoods,
+                            onClear = { setSelectedFoods(emptyList()) },
+                            onConfirm = {
+                                // Save the selected foods to history
+                                personalViewModel.saveSelectedFoods(
+                                    selectedFoods = selectedFoods,
+                                    restaurantName = restaurantName
+                                )
+                                setSelectedFoods(emptyList())
+                            }
+                        )
+                    }
+                }
             }
         }
-    }
-
-    // 懸浮卡片顯示邏輯
-    if (selectedFoods.isNotEmpty()) {
-        FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
-    }
+    )
 }
 
 /**
- * 每個菜單項目的卡片組件。
+ * Card component for each menu item.
  */
 @Composable
-fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit)  {
+fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,7 +144,9 @@ fun FoodCard(food: MenuItem, isSelected: Boolean, onClick: () -> Unit)  {
         ) {
             Text(
                 text = food.name,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "價格: ${food.price} 元",

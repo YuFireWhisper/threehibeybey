@@ -142,7 +142,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            authRepository.updateEmail(newEmail, password).collect { result ->
+            authRepository.updateEmail(newEmail).collect { result ->
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
                         _authState.value = AuthState.Success

@@ -25,7 +25,11 @@ import com.threehibeybey.models.MenuItem
  * Floating summary card displaying total price and calories.
  */
 @Composable
-fun FloatingSummaryCard(selectedFoods: List<MenuItem>, onClear: () -> Unit) {
+fun FloatingSummaryCard(
+    selectedFoods: List<MenuItem>,
+    onClear: () -> Unit,
+    onConfirm: () -> Unit
+) {
     val totalAmount = selectedFoods.sumOf { it.price }
     val totalCalories = selectedFoods.sumOf { it.calories.toDouble() }
 
@@ -42,32 +46,39 @@ fun FloatingSummaryCard(selectedFoods: List<MenuItem>, onClear: () -> Unit) {
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(16.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "金額: $totalAmount 元",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSecondary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "熱量: $totalCalories 大卡",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSecondary
-                    )
-                }
+                Text(
+                    text = "總金額: $totalAmount 元",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    text = "總熱量: $totalCalories 大卡",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
 
-                Button(
-                    onClick = onClear,
-                    modifier = Modifier.padding(start = 16.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("清除")
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text("確認")
+                    }
+                    Button(
+                        onClick = onClear
+                    ) {
+                        Text("清除")
+                    }
                 }
             }
         }

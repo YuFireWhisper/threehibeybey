@@ -1,9 +1,8 @@
-// composables/CategoryScreen.kt
 package com.threehibeybey.composables
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,15 +11,23 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.threehibeybey.models.Category
@@ -28,8 +35,9 @@ import com.threehibeybey.models.MenuItem
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
- * 顯示特定餐廳的所有分類。
+ * Displays all categories for a specific restaurant.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
     navController: NavController,
@@ -40,37 +48,62 @@ fun CategoryScreen(
 ) {
     val restaurants by restaurantViewModel.restaurants.collectAsState()
 
-    // 找到對應的餐廳
+    // Find the corresponding restaurant
     val restaurant = restaurants.find { it.name == restaurantName }
 
-    // 從餐廳中提取所有分類
+    // Extract all categories from the restaurant
     val categories: List<Category> = restaurant?.items ?: emptyList()
 
-    if (categories.isEmpty()) {
-        Log.e("CategoryScreen", "No categories found for restaurant: $restaurantName")
-    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(restaurantName) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                }
+            )
+        },
+        content = { innerPadding ->
+            if (categories.isEmpty()) {
+                Text(
+                    text = "找不到餐廳 $restaurantName 的分類",
+                    modifier = Modifier.padding(innerPadding)
+                )
+            } else {
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(categories) { category ->
+                            CategoryCard(category) {
+                                navController.navigate("food/${restaurantName}/${category.name}")
+                            }
+                        }
+                    }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(categories) { category ->
-            CategoryCard(category) {
-                navController.navigate("food/${restaurantName}/${category.name}")
+                    if (selectedFoods.isNotEmpty()) {
+                        FloatingSummaryCard(
+                            selectedFoods = selectedFoods,
+                            onClear = { setSelectedFoods(emptyList()) },
+                            onConfirm = {
+                                // Handle confirm action
+                                // Save to history if needed
+                            }
+                        )
+                    }
+                }
             }
         }
-    }
-
-    // 懸浮卡片顯示邏輯
-    if (selectedFoods.isNotEmpty()) {
-        FloatingSummaryCard(selectedFoods = selectedFoods, onClear = { setSelectedFoods(emptyList()) })
-    }
+    )
 }
 
 /**
- * 每個分類的卡片組件。
+ * Card component for each category.
  */
 @Composable
 fun CategoryCard(category: Category, onClick: () -> Unit) {
@@ -89,7 +122,9 @@ fun CategoryCard(category: Category, onClick: () -> Unit) {
         ) {
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

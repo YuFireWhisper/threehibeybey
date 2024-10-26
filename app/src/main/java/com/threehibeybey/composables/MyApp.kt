@@ -48,11 +48,11 @@ fun MyApp(
             }
             composable("personal") {
                 PersonalScreen(
-                    personalViewModel = personalViewModel,
+                    // Pass navController here
                     onChangePassword = { /* Handle change password */ },
                     onChangeEmail = { /* Handle change email */ },
                     onDeleteAccount = { /* Handle delete account */ },
-                    onViewHistory = { /* Navigate to history screen */ }
+                    onViewHistory = { navController.navigate("history") } // Navigate to history screen
                 )
             }
             composable(
@@ -65,6 +65,7 @@ fun MyApp(
                 val restaurantName = backStackEntry.arguments?.getString("restaurantName") ?: ""
                 val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
                 FoodScreen(
+                    navController = navController,
                     restaurantName = restaurantName,
                     categoryName = categoryName,
                     restaurantViewModel = restaurantViewModel,
@@ -73,7 +74,6 @@ fun MyApp(
                     personalViewModel = personalViewModel
                 )
             }
-            // 新增的 composable 以處理 "restaurant/{restaurantName}" 路由
             composable(
                 route = "restaurant/{restaurantName}",
                 arguments = listOf(
@@ -89,13 +89,19 @@ fun MyApp(
                     setSelectedFoods = { selectedFoods = it }
                 )
             }
-            // 新增的 composable 處理 "familyMartInput" 路由
             composable(
                 route = "familyMartInput"
             ) {
                 FamilyMartInputScreen(
                     navController = navController,
                     restaurantViewModel = restaurantViewModel
+                )
+            }
+            // Add the history screen composable
+            composable("history") {
+                HistoryScreen(
+                    navController = navController,
+                    personalViewModel = personalViewModel
                 )
             }
         }

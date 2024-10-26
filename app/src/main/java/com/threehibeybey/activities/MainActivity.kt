@@ -29,10 +29,10 @@ class MainActivity : ComponentActivity() {
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
 
-        // 檢查使用者是否已登入
+        // Check if user is logged in
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
-            // 未登入，導向 LoginActivity
+            // Not logged in, navigate to LoginActivity
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         personalViewModel = PersonalViewModel(historyRepository)
         restaurantViewModel = RestaurantViewModel(restaurantRepository)
 
-        // 在 setContent 之前載入資料
+        // Load data before setting content
         restaurantViewModel.loadRestaurants(JsonLoader(), this)
 
         setContent {
@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                 MyApp(
                     restaurantViewModel = restaurantViewModel,
                     personalViewModel = personalViewModel
+                    // Ensure this line is here
                 )
             }
         }

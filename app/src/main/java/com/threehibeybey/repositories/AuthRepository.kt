@@ -75,7 +75,7 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
     /**
      * Updates the user's email after re-authentication.
      */
-    fun updateEmail(newEmail: String, password: String): Flow<AuthResult> = callbackFlow {
+    fun updateEmail(newEmail: String): Flow<AuthResult> = callbackFlow {
         val user = firebaseAuth.currentUser
         user?.updateEmail(newEmail)
             ?.addOnCompleteListener { task ->
