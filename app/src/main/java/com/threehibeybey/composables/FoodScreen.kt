@@ -1,5 +1,6 @@
 package com.threehibeybey.composables
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +24,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -49,16 +52,34 @@ fun FoodScreen(
     personalViewModel: PersonalViewModel
 ) {
     val restaurants by restaurantViewModel.restaurants.collectAsState()
+    val context = LocalContext.current
+    val historyState by personalViewModel.historyState.collectAsState()
 
-    // Find the corresponding restaurant
+    // 定義 foods 變數
+    // 找到對應的餐廳
     val restaurant = restaurants.find { it.name == restaurantName }
 
-    // Find the corresponding category
+    // 從餐廳中找到對應的分類
     val category = restaurant?.items?.find { it.name == categoryName }
-    val subcategories = category?.items ?: emptyList()
 
-    // Extract menu items from subcategories
-    val foods: List<MenuItem> = subcategories.flatMap { it.items }
+    // 從分類中取得所有的菜單項目
+    val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
+
+    LaunchedEffect(historyState) {
+        when (historyState) {
+            is PersonalViewModel.HistoryState.Success -> {
+                Toast.makeText(context, "已保存至歷史紀錄", Toast.LENGTH_SHORT).show()
+            }
+            is PersonalViewModel.HistoryState.Error -> {
+                Toast.makeText(
+                    context,
+                    (historyState as PersonalViewModel.HistoryState.Error).message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -87,12 +108,12 @@ fun FoodScreen(
                     ) {
                         items(foods) { food ->
                             FoodCard(food = food, isSelected = selectedFoods.contains(food)) {
-                                // Update selected food list
+                                // 更新選擇的食物列表
                                 setSelectedFoods(
                                     if (selectedFoods.contains(food)) {
-                                        selectedFoods - food // Deselect
+                                        selectedFoods - food // 取消選擇
                                     } else {
-                                        selectedFoods + food // Select
+                                        selectedFoods + food // 選擇
                                     }
                                 )
                             }
@@ -104,7 +125,7 @@ fun FoodScreen(
                             selectedFoods = selectedFoods,
                             onClear = { setSelectedFoods(emptyList()) },
                             onConfirm = {
-                                // Save the selected foods to history
+                                // 保存選擇的食物至歷史紀錄
                                 personalViewModel.saveSelectedFoods(
                                     selectedFoods = selectedFoods,
                                     restaurantName = restaurantName

@@ -8,10 +8,12 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.threehibeybey.composables.MyApp
+import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.repositories.HistoryRepository
 import com.threehibeybey.repositories.RestaurantRepository
 import com.threehibeybey.ui.theme.MyApplicationTheme
 import com.threehibeybey.utils.JsonLoader
+import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
@@ -22,6 +24,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var restaurantViewModel: RestaurantViewModel
     private lateinit var personalViewModel: PersonalViewModel
+    private lateinit var authViewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +41,15 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        // Initialize repositories
         val restaurantRepository = RestaurantRepository()
         val historyRepository = HistoryRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+        val authRepository = AuthRepository(FirebaseAuth.getInstance())
+
+        // Initialize view models
         personalViewModel = PersonalViewModel(historyRepository)
         restaurantViewModel = RestaurantViewModel(restaurantRepository)
+        authViewModel = AuthViewModel(authRepository)
 
         // Load data before setting content
         restaurantViewModel.loadRestaurants(JsonLoader(), this)
@@ -50,8 +58,8 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 MyApp(
                     restaurantViewModel = restaurantViewModel,
-                    personalViewModel = personalViewModel
-                    // Ensure this line is here
+                    personalViewModel = personalViewModel,
+                    authViewModel = authViewModel
                 )
             }
         }

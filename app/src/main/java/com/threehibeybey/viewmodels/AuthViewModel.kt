@@ -2,9 +2,9 @@ package com.threehibeybey.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseUser
 import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.utils.ValidationUtils
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -189,6 +189,30 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.Success -> {
                         _user.value = null
+                        _authState.value = AuthState.Success
+                    }
+                    is AuthRepository.AuthResult.Error -> {
+                        _authState.value = AuthState.Error(result.message)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the user's email.
+     */
+    fun updateEmail(newEmail: String) {
+        if (!ValidationUtils.isValidEmail(newEmail)) {
+            _authState.value = AuthState.Error("無效的電子郵件格式。")
+            return
+        }
+
+        _authState.value = AuthState.Loading
+        viewModelScope.launch {
+            authRepository.updateEmail(newEmail).collect { result ->
+                when (result) {
+                    is AuthRepository.AuthResult.Success -> {
                         _authState.value = AuthState.Success
                     }
                     is AuthRepository.AuthResult.Error -> {

@@ -89,17 +89,6 @@ fun RestaurantScreen(
                                 }
                             }
                         }
-
-                        if (selectedFoods.isNotEmpty()) {
-                            FloatingSummaryCard(
-                                selectedFoods = selectedFoods,
-                                onClear = { setSelectedFoods(emptyList()) },
-                                onConfirm = {
-                                    // Handle confirm action if needed
-                                    // For RestaurantScreen, you may not need to handle confirm here
-                                }
-                            )
-                        }
                     }
                 }
             }

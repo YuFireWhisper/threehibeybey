@@ -41,10 +41,6 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
 
     /**
      * Saves the selected foods to history.
-     *
-     * @param selectedFoods The list of selected foods.
-     * @param restaurantName The name of the restaurant.
-     * @param timestamp The time when the items were saved.
      */
     fun saveSelectedFoods(
         selectedFoods: List<MenuItem>,
