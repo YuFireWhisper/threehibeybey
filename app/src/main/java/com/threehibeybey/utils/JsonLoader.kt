@@ -10,6 +10,7 @@ import java.io.IOException
 /**
  * Utility class for loading and parsing JSON data from assets.
  */
+@Deprecated("Preferences are now loaded from Firebase. This class is kept for legacy purposes.")
 class JsonLoader {
 
     /**

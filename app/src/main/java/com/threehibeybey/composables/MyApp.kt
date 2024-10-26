@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
+import com.threehibeybey.viewmodels.PreferenceViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
@@ -25,6 +26,7 @@ fun MyApp(
     restaurantViewModel: RestaurantViewModel,
     personalViewModel: PersonalViewModel,
     authViewModel: AuthViewModel,
+    preferenceViewModel: PreferenceViewModel,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -50,6 +52,7 @@ fun MyApp(
             composable("personal") {
                 PersonalScreen(
                     authViewModel = authViewModel,
+                    preferenceViewModel = preferenceViewModel, // Pass the preferenceViewModel
                     onViewHistory = { navController.navigate("history") },
                     onLogout = {
                         authViewModel.logout()

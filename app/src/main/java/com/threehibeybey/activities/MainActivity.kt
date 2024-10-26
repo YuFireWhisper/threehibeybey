@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.threehibeybey.composables.MyApp
 import com.threehibeybey.repositories.AuthRepository
 import com.threehibeybey.repositories.HistoryRepository
@@ -15,6 +16,7 @@ import com.threehibeybey.ui.theme.MyApplicationTheme
 import com.threehibeybey.utils.JsonLoader
 import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
+import com.threehibeybey.viewmodels.PreferenceViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 /**
@@ -25,12 +27,18 @@ class MainActivity : ComponentActivity() {
     private lateinit var restaurantViewModel: RestaurantViewModel
     private lateinit var personalViewModel: PersonalViewModel
     private lateinit var authViewModel: AuthViewModel
+    private lateinit var preferenceViewModel: PreferenceViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
+
+        // Enable Firestore offline persistence
+        FirebaseFirestore.getInstance().firestoreSettings = FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(true)
+            .build()
 
         // Check if user is logged in
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -50,6 +58,7 @@ class MainActivity : ComponentActivity() {
         personalViewModel = PersonalViewModel(historyRepository)
         restaurantViewModel = RestaurantViewModel(restaurantRepository)
         authViewModel = AuthViewModel(authRepository)
+        preferenceViewModel = PreferenceViewModel() // Already initialized
 
         // Load data before setting content
         restaurantViewModel.loadSchoolCanteens(JsonLoader(), this)
@@ -60,6 +69,7 @@ class MainActivity : ComponentActivity() {
                     restaurantViewModel = restaurantViewModel,
                     personalViewModel = personalViewModel,
                     authViewModel = authViewModel,
+                    preferenceViewModel = preferenceViewModel, // Passing preferenceViewModel
                     onLogout = {
                         // Navigate to LoginActivity when user logs out
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))

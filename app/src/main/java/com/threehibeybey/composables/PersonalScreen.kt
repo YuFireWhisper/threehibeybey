@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
+import com.threehibeybey.viewmodels.PreferenceViewModel
 
 data class SettingsOption(
     val title: String,
@@ -62,6 +63,7 @@ enum class OptionType {
 @Composable
 fun PersonalScreen(
     authViewModel: AuthViewModel,
+    preferenceViewModel: PreferenceViewModel,
     onViewHistory: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -71,6 +73,7 @@ fun PersonalScreen(
 
     val context = LocalContext.current
     val authState by authViewModel.authState.collectAsState()
+    val preferences by preferenceViewModel.preferences.collectAsState()
 
     LaunchedEffect(authState) {
         when (authState) {
@@ -148,6 +151,15 @@ fun PersonalScreen(
             )
 
             SettingsGroup(accountOptions)
+
+            Text(
+                "偏好設置",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+
+            // Display preferences
+            PreferencesGroup(preferences, preferenceViewModel)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -263,6 +275,50 @@ fun SettingsItem(
     }
 }
 
+@Composable
+fun PreferencesGroup(
+    preferences: Map<String, Any>,
+    preferenceViewModel: PreferenceViewModel
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column {
+            preferences.forEach { (key, value) ->
+                PreferenceItem(
+                    key = key,
+                    value = value,
+                    onValueChange = { newValue ->
+                        preferenceViewModel.updatePreference(key, newValue)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PreferenceItem(
+    key: String,
+    value: Any,
+    onValueChange: (Any) -> Unit
+) {
+    // For simplicity, assume all preferences are Boolean
+    val isChecked = value as? Boolean ?: false
+    ListItem(
+        headlineContent = { Text(key) },
+        trailingContent = {
+            androidx.compose.material3.Switch(
+                checked = isChecked,
+                onCheckedChange = { onValueChange(it) }
+            )
+        }
+    )
+}
 
 @Composable
 fun ChangePasswordDialog(currentEmail: String, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
