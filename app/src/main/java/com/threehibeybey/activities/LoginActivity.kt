@@ -38,9 +38,9 @@ class LoginActivity : ComponentActivity() {
         val authRepository = AuthRepository(FirebaseAuth.getInstance())
         authViewModel = AuthViewModel(authRepository)
 
-        // 檢查是否已經登入
+        // 檢查是否已經登入且驗證電子郵件
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.isEmailVerified) {
             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
             finish()
             return
@@ -81,6 +81,10 @@ class LoginActivity : ComponentActivity() {
                         },
                         onRegisterClick = {
                             startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
+                        },
+                        onForgotPasswordClick = {
+                            authViewModel.sendPasswordResetEmail(it)
+                            Toast.makeText(this@LoginActivity, "已發送密碼重置郵件，請檢查您的電子郵件。", Toast.LENGTH_SHORT).show()
                         },
                         isLoading = isLoading
                     )

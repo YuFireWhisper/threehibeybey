@@ -54,8 +54,8 @@ class RegisterActivity : ComponentActivity() {
                     is AuthState.Loading -> {
                         // Show loading indicator if necessary
                     }
-                    is AuthState.RegisterSuccess -> {
-                        Toast.makeText(this@RegisterActivity, "註冊成功，請登入。", Toast.LENGTH_SHORT).show()
+                    is AuthState.EmailVerificationSent -> {
+                        Toast.makeText(this@RegisterActivity, "註冊成功，請檢查您的電子郵件以驗證帳戶。", Toast.LENGTH_LONG).show()
                         startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
                         finish()
                     }

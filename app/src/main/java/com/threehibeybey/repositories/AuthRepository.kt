@@ -1,6 +1,5 @@
 package com.threehibeybey.repositories
 
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
@@ -19,7 +18,11 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user: FirebaseUser? = firebaseAuth.currentUser
-                    trySend(AuthResult.Success(user))
+                    if (user != null && user.isEmailVerified) {
+                        trySend(AuthResult.Success(user))
+                    } else {
+                        trySend(AuthResult.Error("您的電子郵件尚未驗證，請檢查您的收件箱。"))
+                    }
                 } else {
                     val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "登入失敗。"
                     trySend(AuthResult.Error(errorMessage))
@@ -33,7 +36,14 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user: FirebaseUser? = firebaseAuth.currentUser
-                    trySend(AuthResult.Success(user))
+                    user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
+                        if (verificationTask.isSuccessful) {
+                            trySend(AuthResult.EmailVerificationSent)
+                        } else {
+                            val errorMessage = verificationTask.exception?.let { getErrorMessage(it) } ?: "無法發送驗證郵件。"
+                            trySend(AuthResult.Error(errorMessage))
+                        }
+                    }
                 } else {
                     val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "註冊失敗。"
                     trySend(AuthResult.Error(errorMessage))
@@ -46,81 +56,16 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
         firebaseAuth.signOut()
     }
 
-    fun updateEmail(newEmail: String, currentPassword: String): Flow<AuthResult> = callbackFlow {
-        val user = firebaseAuth.currentUser
-        if (user != null) {
-            val credential = EmailAuthProvider.getCredential(user.email ?: "", currentPassword)
-            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
-                if (reAuthTask.isSuccessful) {
-                    user.updateEmail(newEmail)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                trySend(AuthResult.Success(user))
-                            } else {
-                                val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "更新電子郵件失敗。"
-                                trySend(AuthResult.Error(errorMessage))
-                            }
-                        }
+    fun sendPasswordResetEmail(email: String): Flow<AuthResult> = callbackFlow {
+        firebaseAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    trySend(AuthResult.PasswordResetEmailSent)
                 } else {
-                    val errorMessage = reAuthTask.exception?.let { getErrorMessage(it) } ?: "重新驗證失敗。"
+                    val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "無法發送密碼重置郵件。"
                     trySend(AuthResult.Error(errorMessage))
                 }
             }
-        } else {
-            trySend(AuthResult.Error("使用者未登入。"))
-        }
-        awaitClose { }
-    }
-
-    fun updatePassword(newPassword: String, currentPassword: String): Flow<AuthResult> = callbackFlow {
-        val user = firebaseAuth.currentUser
-        if (user != null) {
-            val credential = EmailAuthProvider.getCredential(user.email ?: "", currentPassword)
-            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
-                if (reAuthTask.isSuccessful) {
-                    user.updatePassword(newPassword)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                trySend(AuthResult.Success(user))
-                            } else {
-                                val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "更新密碼失敗。"
-                                trySend(AuthResult.Error(errorMessage))
-                            }
-                        }
-                } else {
-                    val errorMessage = reAuthTask.exception?.let { getErrorMessage(it) } ?: "重新驗證失敗。"
-                    trySend(AuthResult.Error(errorMessage))
-                }
-            }
-        } else {
-            trySend(AuthResult.Error("使用者未登入。"))
-        }
-        awaitClose { }
-    }
-
-    fun deleteAccount(password: String): Flow<AuthResult> = callbackFlow {
-        val user = firebaseAuth.currentUser
-        if (user != null) {
-            val credential = EmailAuthProvider.getCredential(user.email ?: "", password)
-            user.reauthenticate(credential).addOnCompleteListener { reAuthTask ->
-                if (reAuthTask.isSuccessful) {
-                    user.delete()
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                trySend(AuthResult.Success(null))
-                            } else {
-                                val errorMessage = task.exception?.let { getErrorMessage(it) } ?: "刪除帳號失敗。"
-                                trySend(AuthResult.Error(errorMessage))
-                            }
-                        }
-                } else {
-                    val errorMessage = reAuthTask.exception?.let { getErrorMessage(it) } ?: "重新驗證失敗。"
-                    trySend(AuthResult.Error(errorMessage))
-                }
-            }
-        } else {
-            trySend(AuthResult.Error("使用者未登入。"))
-        }
         awaitClose { }
     }
 
@@ -140,5 +85,7 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
     sealed class AuthResult {
         data class Success(val user: FirebaseUser?) : AuthResult()
         data class Error(val message: String) : AuthResult()
+        object EmailVerificationSent : AuthResult()
+        object PasswordResetEmailSent : AuthResult()
     }
 }

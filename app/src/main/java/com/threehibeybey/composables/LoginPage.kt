@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 
 /**
@@ -31,6 +35,7 @@ import androidx.compose.ui.unit.dp
 fun LoginPage(
     onLoginClick: (String, String) -> Unit,
     onRegisterClick: () -> Unit,
+    onForgotPasswordClick: (String) -> Unit,
     isLoading: Boolean
 ) {
     var email by remember { mutableStateOf("") }
@@ -66,8 +71,8 @@ fun LoginPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    isError = emailError.isNotEmpty()
+                    isError = emailError.isNotEmpty(),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                 )
                 if (emailError.isNotEmpty()) {
                     Text(
@@ -91,15 +96,40 @@ fun LoginPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
                     visualTransformation = PasswordVisualTransformation(),
-                    isError = passwordError.isNotEmpty()
+                    isError = passwordError.isNotEmpty(),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            if (emailError.isEmpty() && passwordError.isEmpty()) {
+                                onLoginClick(email, password)
+                            }
+                        }
+                    )
                 )
                 if (passwordError.isNotEmpty()) {
                     Text(
                         text = passwordError,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Start)
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        if (email.isNotEmpty()) {
+                            onForgotPasswordClick(email)
+                        } else {
+                            emailError = "請先輸入您的電子郵件"
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(
+                        text = "忘記密碼？",
+                        textDecoration = TextDecoration.Underline
                     )
                 }
 
@@ -111,11 +141,11 @@ fun LoginPage(
                     },
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    Text("Login")
+                    Text("登入")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = onRegisterClick) {
-                    Text("Register")
+                    Text("註冊")
                 }
             }
         }

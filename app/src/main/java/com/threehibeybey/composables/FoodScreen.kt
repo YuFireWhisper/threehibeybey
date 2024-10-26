@@ -61,9 +61,9 @@ fun FoodScreen(
     val category = restaurant?.items?.find { it.name == categoryName }
     val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
 
-    // Only show Toast when historyState is Success and after a save action
+    // Show Toast only when selectedFoods is not empty
     LaunchedEffect(historyState) {
-        if (historyState is PersonalViewModel.HistoryState.Success && selectedFoods.isEmpty()) {
+        if (historyState is PersonalViewModel.HistoryState.Success && selectedFoods.isNotEmpty()) {
             Toast.makeText(context, "已保存至歷史紀錄", Toast.LENGTH_SHORT).show()
             personalViewModel.resetHistoryState() // Reset history state after showing the Toast
         } else if (historyState is PersonalViewModel.HistoryState.Error) {
