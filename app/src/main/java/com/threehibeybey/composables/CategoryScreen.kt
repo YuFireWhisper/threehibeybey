@@ -101,6 +101,7 @@ fun CategoryScreen(
                     ) {
                         items(categories) { category ->
                             CategoryCard(category) {
+                                // 修改此處以直接導航到品項，而無需子分類
                                 navController.navigate("food/${canteenName}/${restaurantName}/${category.name}")
                             }
                         }

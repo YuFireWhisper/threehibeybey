@@ -1,9 +1,9 @@
 package com.threehibeybey.models
 
 /**
- * Data class representing a category, containing multiple subcategories.
+ * Data class representing a category, containing multiple menu items.
  */
 data class Category(
     val name: String = "",
-    val items: List<Subcategory> = emptyList()
+    val items: List<MenuItem> = emptyList()
 )

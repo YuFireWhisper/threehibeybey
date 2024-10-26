@@ -73,32 +73,21 @@ class RestaurantViewModel(private val restaurantRepository: RestaurantRepository
             if (canteen.name == "宜園餐廳") {
                 val updatedRestaurants = canteen.items.map { restaurant ->
                     if (restaurant.name == "全家便利商店") {
-                        // Check if "自定義品項" category exists
-                        val existingCategory = restaurant.items.find { it.name == "自定義品項" }
+                        // Find the category "分類"
+                        val existingCategory = restaurant.items.find { it.name == "分類" }
                         val updatedItems = if (existingCategory != null) {
-                            // Update existing category
+                            // Add the new menu item to the existing category
                             val updatedCategory = existingCategory.copy(
-                                items = existingCategory.items.map { subcategory ->
-                                    if (subcategory.name == "自定義子分類") {
-                                        subcategory.copy(items = subcategory.items + menuItem)
-                                    } else {
-                                        subcategory
-                                    }
-                                }
+                                items = existingCategory.items + menuItem
                             )
                             restaurant.items.map {
-                                if (it.name == "自定義品項") updatedCategory else it
+                                if (it.name == "分類") updatedCategory else it
                             }
                         } else {
-                            // Add new category and subcategory
+                            // If "分類" category does not exist, add it with the new menu item
                             restaurant.items + com.threehibeybey.models.Category(
-                                name = "自定義品項",
-                                items = listOf(
-                                    com.threehibeybey.models.Subcategory(
-                                        name = "自定義子分類",
-                                        items = listOf(menuItem)
-                                    )
-                                )
+                                name = "分類",
+                                items = listOf(menuItem)
                             )
                         }
                         restaurant.copy(items = updatedItems)

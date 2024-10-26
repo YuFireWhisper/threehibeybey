@@ -55,7 +55,7 @@ fun FoodScreen(
 ) {
     // 替換 restaurants 為 schoolCanteens
     val schoolCanteens by restaurantViewModel.schoolCanteens.collectAsState()
-    val context = LocalContext.current
+    val context = LocalContext.current // 使用 LocalContext
     val historyState by personalViewModel.historyState.collectAsState()
 
     // 根據 canteenName 找到對應的學餐
@@ -68,7 +68,7 @@ fun FoodScreen(
     val category = restaurant?.items?.find { it.name == categoryName }
 
     // 提取菜單項目
-    val foods: List<MenuItem> = category?.items?.flatMap { it.items } ?: emptyList()
+    val foods: List<MenuItem> = category?.items ?: emptyList()
 
     // Show Toast when history is saved
     LaunchedEffect(historyState) {
