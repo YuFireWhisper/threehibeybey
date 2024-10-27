@@ -24,12 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.threehibeybey.models.Category
 import com.threehibeybey.models.Restaurant
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
-/**
- * Composable function for displaying the list of restaurants in a school canteen.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CanteenScreen(
@@ -40,7 +38,16 @@ fun CanteenScreen(
     val schoolCanteens by restaurantViewModel.schoolCanteens.collectAsState()
 
     val canteen = schoolCanteens.find { it.name == canteenName }
-    val restaurants: List<Restaurant> = canteen?.items ?: emptyList()
+    var restaurants: List<Restaurant> = canteen?.items ?: emptyList()
+
+    // 如果是至善餐廳，動態添加全家便利商店
+    if (canteenName == "至善餐廳") {
+        val familyMart = Restaurant(
+            name = "全家便利商店",
+            items = listOf(Category(name = "品項", items = emptyList()))
+        )
+        restaurants = restaurants + familyMart
+    }
 
     Scaffold(
         topBar = {
@@ -79,10 +86,12 @@ fun CanteenScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(restaurants) { restaurant ->
-                            RestaurantCard(restaurant) {
-                                if (restaurant.name == "全家便利商店") {
+                            if (restaurant.name == "全家便利商店") {
+                                RestaurantCard(restaurant) {
                                     navController.navigate("familyMartInput")
-                                } else {
+                                }
+                            } else {
+                                RestaurantCard(restaurant) {
                                     navController.navigate("restaurant/${canteenName}/${restaurant.name}")
                                 }
                             }
@@ -91,5 +100,13 @@ fun CanteenScreen(
                 }
             }
         }
+    )
+}
+
+@Composable
+fun ConvenienceStoreRestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
+    RestaurantCard(
+        restaurant = restaurant,
+        onClick = onClick
     )
 }

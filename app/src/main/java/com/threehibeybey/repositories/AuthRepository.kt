@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 
 class AuthRepository(private val firebaseAuth: FirebaseAuth) {
 
@@ -95,32 +96,6 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
         awaitClose { }
     }
 
-    fun sendDeleteAccountEmail(password: String): Flow<AuthResult> = callbackFlow {
-        firebaseAuth.currentUser?.let { currentUser ->
-            val credential = EmailAuthProvider.getCredential(currentUser.email!!, password)
-            currentUser.reauthenticate(credential)
-                .addOnCompleteListener { authTask ->
-                    if (authTask.isSuccessful) {
-                        currentUser.sendEmailVerification()
-                            .addOnCompleteListener { emailTask ->
-                                if (emailTask.isSuccessful) {
-                                    trySend(AuthResult.DeleteAccountEmailSent)
-                                } else {
-                                    val errorMessage = emailTask.exception?.let { getErrorMessage(it) } ?: "無法發送帳號刪除確認。"
-                                    trySend(AuthResult.Error(errorMessage))
-                                }
-                            }
-                    } else {
-                        val errorMessage = authTask.exception?.let { getErrorMessage(it) } ?: "密碼驗證失敗。"
-                        trySend(AuthResult.Error(errorMessage))
-                    }
-                }
-        } ?: run {
-            trySend(AuthResult.Error("未登入，無法刪除帳號。"))
-        }
-        awaitClose { }
-    }
-
     private fun getErrorMessage(exception: Exception): String {
         return if (exception is FirebaseAuthException) {
             when (exception.errorCode) {
@@ -134,12 +109,37 @@ class AuthRepository(private val firebaseAuth: FirebaseAuth) {
         }
     }
 
+    fun deleteAccount(password: String): Flow<AuthResult> = callbackFlow {
+        firebaseAuth.currentUser?.let { currentUser ->
+            try {
+                // 1. 重新驗證用戶
+                val credential = EmailAuthProvider.getCredential(currentUser.email!!, password)
+                currentUser.reauthenticate(credential).await()
+
+                // 2. 直接刪除帳號
+                currentUser.delete().await()
+
+                // 3. 發送成功結果
+                trySend(AuthResult.AccountDeleted)
+            } catch (e: Exception) {
+                val errorMessage = when (e) {
+                    is FirebaseAuthException -> getErrorMessage(e)
+                    else -> "刪除帳號時發生錯誤：${e.localizedMessage}"
+                }
+                trySend(AuthResult.Error(errorMessage))
+            }
+        } ?: run {
+            trySend(AuthResult.Error("未登入，無法刪除帳號。"))
+        }
+        awaitClose { }
+    }
+
     sealed class AuthResult {
         data class Success(val user: FirebaseUser?) : AuthResult()
         data class Error(val message: String) : AuthResult()
         data object EmailVerificationSent : AuthResult()
         data object PasswordResetEmailSent : AuthResult()
         data object EmailChangeEmailSent : AuthResult()
-        data object DeleteAccountEmailSent : AuthResult()
+        data object AccountDeleted : AuthResult()
     }
 }

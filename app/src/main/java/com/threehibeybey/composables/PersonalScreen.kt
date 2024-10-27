@@ -11,17 +11,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.threehibeybey.viewmodels.AuthState
 import com.threehibeybey.viewmodels.AuthViewModel
@@ -63,9 +68,9 @@ enum class OptionType {
 @Composable
 fun PersonalScreen(
     authViewModel: AuthViewModel,
-    preferenceViewModel: PreferenceViewModel,
     onViewHistory: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showChangeEmailDialog by remember { mutableStateOf(false) }
@@ -73,7 +78,6 @@ fun PersonalScreen(
 
     val context = LocalContext.current
     val authState by authViewModel.authState.collectAsState()
-    val preferences by preferenceViewModel.preferences.collectAsState()
 
     LaunchedEffect(authState) {
         when (authState) {
@@ -92,6 +96,10 @@ fun PersonalScreen(
             is AuthState.Error -> {
                 Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_SHORT).show()
                 authViewModel.resetAuthState()
+            }
+            is AuthState.AccountDeleted -> {
+                Toast.makeText(context, "帳號已成功刪除", Toast.LENGTH_SHORT).show()
+                onNavigateToLogin()
             }
             else -> {}
         }
@@ -157,7 +165,7 @@ fun PersonalScreen(
             val dangerOptions = listOf(
                 SettingsOption(
                     "登出",
-                    Icons.Default.ExitToApp,
+                    Icons.AutoMirrored.Filled.ExitToApp,
                     onLogout,
                     OptionType.DANGEROUS
                 ),
@@ -173,6 +181,16 @@ fun PersonalScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (showDeleteAccountDialog) {
+        DeleteAccountDialog(
+            onConfirm = { password ->
+                authViewModel.deleteAccount(password)
+                showDeleteAccountDialog = false
+            },
+            onDismiss = { showDeleteAccountDialog = false }
+        )
     }
 
     if (showChangePasswordDialog) {
@@ -193,16 +211,6 @@ fun PersonalScreen(
                 showChangeEmailDialog = false
             },
             onDismiss = { showChangeEmailDialog = false }
-        )
-    }
-
-    if (showDeleteAccountDialog) {
-        DeleteAccountDialog(
-            onConfirm = { password ->
-                authViewModel.sendDeleteAccountEmail(password)
-                showDeleteAccountDialog = false
-            },
-            onDismiss = { showDeleteAccountDialog = false }
         )
     }
 }
@@ -359,7 +367,6 @@ fun ChangePasswordDialog(currentEmail: String, onConfirm: (String) -> Unit, onDi
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangeEmailDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
@@ -381,18 +388,21 @@ fun ChangeEmailDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteAccountDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("刪除帳號") },
         text = {
             Column {
-                Text("請輸入您的密碼以驗證身份，驗證成功後將發送帳號刪除確認到您的電子郵件。")
+                Text(
+                    "請輸入您的密碼以確認刪除帳號。\n注意：此操作將直接刪除您的帳號且無法復原！",
+                    color = MaterialTheme.colorScheme.error
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = password,
@@ -407,25 +417,37 @@ fun DeleteAccountDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                     label = { Text("密碼") },
                     isError = errorMessage.isNotEmpty(),
                     singleLine = true,
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (passwordVisible) "隱藏密碼" else "顯示密碼"
+                            )
+                        }
+                    }
                 )
                 if (errorMessage.isNotEmpty()) {
                     Text(
                         text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp)
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                if (errorMessage.isEmpty()) {
-                    onConfirm(password)
-                }
-            }) {
-                Text("確定")
+            TextButton(
+                onClick = {
+                    if (password.isNotEmpty()) {
+                        onConfirm(password)
+                    }
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("確認刪除")
             }
         },
         dismissButton = {

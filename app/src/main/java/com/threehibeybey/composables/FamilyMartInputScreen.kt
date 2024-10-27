@@ -28,16 +28,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.threehibeybey.models.MenuItem
-import com.threehibeybey.viewmodels.RestaurantViewModel
+import com.threehibeybey.viewmodels.PersonalViewModel
 
-/**
- * Composable function for inputting new Menu Items for "全家便利商店".
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyMartInputScreen(
     navController: NavController,
-    restaurantViewModel: RestaurantViewModel
+    personalViewModel: PersonalViewModel
 ) {
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -49,7 +46,7 @@ fun FamilyMartInputScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("新增全家便利商店品項") },
+                title = { Text("全家便利商店") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -155,21 +152,21 @@ fun FamilyMartInputScreen(
                         }
 
                         if (isValid) {
-                            val newFood = MenuItem(
+                            val newItem = MenuItem(
                                 name = name,
                                 price = priceValue!!,
                                 calories = caloriesValue!!
                             )
-                            restaurantViewModel.addFamilyMartFoodItem(newFood)
+
+                            personalViewModel.addToHistory(newItem, "全家便利商店")
                             navController.popBackStack()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("新增品項")
+                    Text("新增至歷史紀錄")
                 }
             }
         }
     )
 }
-

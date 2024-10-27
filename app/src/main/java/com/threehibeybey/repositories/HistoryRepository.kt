@@ -103,12 +103,12 @@ class HistoryRepository(private val firestore: FirebaseFirestore, private val fi
      * @param foodItem The food item to add.
      * @return True if the operation was successful, false otherwise.
      */
-    suspend fun addFoodItem(foodItem: MenuItem): Boolean {
+    suspend fun addFoodItem(foodItem: MenuItem, restaurantName: String = "單品項"): Boolean {
         return try {
             val user = firebaseAuth.currentUser
             if (user != null) {
                 val historyItem = HistoryItem(
-                    restaurantName = "單品項",
+                    restaurantName = restaurantName,
                     items = listOf(foodItem),
                     totalCalories = foodItem.calories,
                     totalPrice = foodItem.price,

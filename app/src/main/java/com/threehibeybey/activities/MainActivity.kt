@@ -65,7 +65,6 @@ class MainActivity : ComponentActivity() {
                     restaurantViewModel = restaurantViewModel,
                     personalViewModel = personalViewModel,
                     authViewModel = authViewModel,
-                    preferenceViewModel = preferenceViewModel,
                     onLogout = {
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                         finish()

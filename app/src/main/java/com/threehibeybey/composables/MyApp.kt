@@ -15,7 +15,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.threehibeybey.viewmodels.AuthViewModel
 import com.threehibeybey.viewmodels.PersonalViewModel
-import com.threehibeybey.viewmodels.PreferenceViewModel
 import com.threehibeybey.viewmodels.RestaurantViewModel
 
 @Composable
@@ -23,7 +22,6 @@ fun MyApp(
     restaurantViewModel: RestaurantViewModel,
     personalViewModel: PersonalViewModel,
     authViewModel: AuthViewModel,
-    preferenceViewModel: PreferenceViewModel,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -43,20 +41,26 @@ fun MyApp(
                     restaurantViewModel = restaurantViewModel
                 )
             }
+
             composable("calorieCalculator") {
                 CalorieCalculatorScreen()
             }
+
             composable("personal") {
                 PersonalScreen(
                     authViewModel = authViewModel,
-                    preferenceViewModel = preferenceViewModel,
                     onViewHistory = { navController.navigate("history") },
                     onLogout = {
+                        authViewModel.logout()
+                        onLogout()
+                    },
+                    onNavigateToLogin = {
                         authViewModel.logout()
                         onLogout()
                     }
                 )
             }
+
             composable(
                 route = "food/{canteenName}/{restaurantName}/{categoryName}",
                 arguments = listOf(
@@ -79,6 +83,7 @@ fun MyApp(
                     personalViewModel = personalViewModel
                 )
             }
+
             composable(
                 route = "restaurant/{canteenName}/{restaurantName}",
                 arguments = listOf(
@@ -97,6 +102,7 @@ fun MyApp(
                     setSelectedFoods = { selectedFoods = it }
                 )
             }
+
             composable(
                 route = "canteen/{canteenName}",
                 arguments = listOf(
@@ -110,12 +116,14 @@ fun MyApp(
                     restaurantViewModel = restaurantViewModel
                 )
             }
+
             composable("familyMartInput") {
                 FamilyMartInputScreen(
                     navController = navController,
-                    restaurantViewModel = restaurantViewModel
+                    personalViewModel = personalViewModel
                 )
             }
+
             composable("history") {
                 HistoryScreen(
                     navController = navController,

@@ -33,16 +33,12 @@ class PersonalViewModel(private val historyRepository: HistoryRepository) : View
         _selectedHistoryItem.value = item
     }
 
-    /**
-     * Adds a single food item to the user's history.
-     */
-    fun addToHistory(foodItem: MenuItem) {
+    fun addToHistory(foodItem: MenuItem, restaurantName: String = "單品項") {
         _historyState.value = HistoryState.Loading
         viewModelScope.launch {
-            val result = historyRepository.addFoodItem(foodItem)
+            val result = historyRepository.addFoodItem(foodItem, restaurantName)
             if (result) {
                 _historyState.value = HistoryState.Success
-                // Refresh history records
                 getHistory()
             } else {
                 _historyState.value = HistoryState.Error("無法新增至歷史紀錄。")

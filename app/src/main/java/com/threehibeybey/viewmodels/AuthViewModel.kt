@@ -21,6 +21,7 @@ sealed class AuthState {
     object PasswordResetEmailSent : AuthState()
     object EmailChangeEmailSent : AuthState()
     object DeleteAccountEmailSent : AuthState()
+    data object AccountDeleted : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -43,6 +44,25 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         if (currentUser != null) {
             _user.value = currentUser
             _authState.value = AuthState.Idle
+        }
+    }
+
+    fun deleteAccount(password: String) {
+        _authState.value = AuthState.Loading
+        viewModelScope.launch {
+            authRepository.deleteAccount(password).collect { result ->
+                when (result) {
+                    is AuthRepository.AuthResult.AccountDeleted -> {
+                        _user.value = null
+                        _authState.value = AuthState.AccountDeleted
+                        logout() // 確保用戶被登出
+                    }
+                    is AuthRepository.AuthResult.Error -> {
+                        _authState.value = AuthState.Error(result.message)
+                    }
+                    else -> {}
+                }
+            }
         }
     }
 
@@ -140,26 +160,6 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 when (result) {
                     is AuthRepository.AuthResult.EmailChangeEmailSent -> {
                         _authState.value = AuthState.EmailChangeEmailSent
-                    }
-                    is AuthRepository.AuthResult.Error -> {
-                        _authState.value = AuthState.Error(result.message)
-                    }
-                    else -> {}
-                }
-            }
-        }
-    }
-
-    /**
-     * Sends a delete account email to the user after verifying the password.
-     */
-    fun sendDeleteAccountEmail(password: String) {
-        _authState.value = AuthState.Loading
-        viewModelScope.launch {
-            authRepository.sendDeleteAccountEmail(password).collect { result ->
-                when (result) {
-                    is AuthRepository.AuthResult.DeleteAccountEmailSent -> {
-                        _authState.value = AuthState.DeleteAccountEmailSent
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)
