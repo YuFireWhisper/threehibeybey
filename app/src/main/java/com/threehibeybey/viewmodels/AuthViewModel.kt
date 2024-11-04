@@ -55,7 +55,6 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                     is AuthRepository.AuthResult.AccountDeleted -> {
                         _user.value = null
                         _authState.value = AuthState.AccountDeleted
-                        logout() // 確保用戶被登出
                     }
                     is AuthRepository.AuthResult.Error -> {
                         _authState.value = AuthState.Error(result.message)

@@ -98,8 +98,7 @@ fun PersonalScreen(
                 authViewModel.resetAuthState()
             }
             is AuthState.AccountDeleted -> {
-                Toast.makeText(context, "帳號已成功刪除", Toast.LENGTH_SHORT).show()
-                onNavigateToLogin()
+                onLogout()
             }
             else -> {}
         }
@@ -187,7 +186,6 @@ fun PersonalScreen(
         DeleteAccountDialog(
             onConfirm = { password ->
                 authViewModel.deleteAccount(password)
-                showDeleteAccountDialog = false
             },
             onDismiss = { showDeleteAccountDialog = false }
         )
@@ -421,7 +419,7 @@ fun DeleteAccountDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (passwordVisible) "隱藏密碼" else "顯示密碼"
                             )
                         }
@@ -441,6 +439,7 @@ fun DeleteAccountDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
                 onClick = {
                     if (password.isNotEmpty()) {
                         onConfirm(password)
+                        onDismiss()
                     }
                 },
                 colors = ButtonDefaults.textButtonColors(
